@@ -9,7 +9,7 @@ load_dotenv()
 class Settings:
     def __init__(self):
         # AI Provider Configuration
-        self.AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini")
+        self.AI_PROVIDER = os.getenv("AI_PROVIDER", "openai")
         
         # OpenAI Configuration
         self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -28,13 +28,25 @@ class Settings:
         self.HOST = os.getenv("HOST", "0.0.0.0")
         self.PORT = int(os.getenv("PORT", "8000"))
         
-        # AI Assistant Configuration
-        self.AI_ASSISTANT_NAME = os.getenv("AI_ASSISTANT_NAME", "Assistant")
+        # Emergency System Configuration
+        self.SYSTEM_NAME = os.getenv("SYSTEM_NAME", "RAPID-100")
+        self.SYSTEM_VERSION = os.getenv("SYSTEM_VERSION", "2.0.0")
+        
+        # Voice Configuration
         self.AI_ASSISTANT_VOICE = os.getenv("AI_ASSISTANT_VOICE", "alice")
         
-        # Conversation Configuration
-        self.MAX_CONVERSATION_LENGTH = int(os.getenv("MAX_CONVERSATION_LENGTH", "10"))
+        # Emergency Processing Configuration
+        self.MAX_RECORDING_LENGTH = int(os.getenv("MAX_RECORDING_LENGTH", "30"))  # seconds
         self.SPEECH_TIMEOUT = int(os.getenv("SPEECH_TIMEOUT", "5"))
+<<<<<<< HEAD
+        self.MAX_PROCESSING_TIME = int(os.getenv("MAX_PROCESSING_TIME", "5000"))  # milliseconds
+        
+        # Emergency Classification Thresholds
+        self.MIN_CONFIDENCE_THRESHOLD = float(os.getenv("MIN_CONFIDENCE_THRESHOLD", "0.3"))
+        self.SEVERITY_THRESHOLD_CRITICAL = float(os.getenv("SEVERITY_THRESHOLD_CRITICAL", "80"))
+        self.SEVERITY_THRESHOLD_HIGH = float(os.getenv("SEVERITY_THRESHOLD_HIGH", "60"))
+        self.SEVERITY_THRESHOLD_MODERATE = float(os.getenv("SEVERITY_THRESHOLD_MODERATE", "40"))
+=======
         
         # Email Configuration
         self.SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
@@ -59,6 +71,7 @@ class Settings:
         self.TEAM_MAX_CONCURRENT_CALLS = int(os.getenv("TEAM_MAX_CONCURRENT_CALLS", "3"))
         self.TEAM_AUTO_ASSIGN_CALLS = os.getenv("TEAM_AUTO_ASSIGN_CALLS", "true").lower() == "true"
         self.TEAM_SKILL_MATCHING = os.getenv("TEAM_SKILL_MATCHING", "true").lower() == "true"
+>>>>>>> 91c63386882b7ea903abf849c9707bba1e9f19a8
 
 
 settings = Settings()
