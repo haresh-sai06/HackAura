@@ -9,7 +9,7 @@ import { CallsSection } from '@/components/dashboard/CallsSection';
 import { AnalyticsSection } from '@/components/dashboard/AnalyticsSection';
 import { ClientOnly } from '@/components/ui/client-only';
 import { useEmergencyStore } from '@/store/emergencyStore';
-import { EmergencyCall, CallAnalytics as CallAnalyticsType, CallStatus } from '@/types/emergency';
+import { EmergencyCall, CallAnalytics as CallAnalyticsType, CallStatus, EmergencyType, Severity } from '@/types/emergency';
 import { emergencyApi } from '@/utils/api';
 import { useWebSocket } from '@/utils/websocket';
 
@@ -190,19 +190,110 @@ export default function Dashboard() {
   };
 
   const handleRefresh = async () => {
+    console.log('Refresh button clicked');
     try {
       setLoading(true);
-      const [callsData, analyticsData] = await Promise.all([
-        emergencyApi.getCalls(),
-        emergencyApi.getAnalytics(),
-      ]);
-      setCalls(callsData);
-      setAnalytics(analyticsData);
+      console.log('Fetching fresh data...');
+      
+      // Try to fetch from backend first
+      try {
+        const [callsData, analyticsData] = await Promise.all([
+          emergencyApi.getCalls(),
+          emergencyApi.getAnalytics(),
+        ]);
+        console.log('Data fetched successfully from backend:', { callsData, analyticsData });
+        setCalls(callsData);
+        setAnalytics(analyticsData);
+        setError(null);
+      } catch (networkError) {
+        console.warn('Backend not available, using mock data for refresh:', networkError);
+        
+        // Show a brief notification about using mock data
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-4 py-2 rounded-lg shadow-lg z-50 border border-amber-300 dark:border-amber-700';
+        notification.innerHTML = `
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-sm font-medium">Using demo data - Backend not available</span>
+          </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 3000);
+        
+        // Use mock data for development when backend isn't available
+        const mockCalls: EmergencyCall[] = [
+          {
+            id: Date.now().toString(),
+            callerName: 'Refreshed User',
+            phoneNumber: '+1234567890',
+            location: {
+              address: '123 Refreshed St, City, State',
+              latitude: 40.7128,
+              longitude: -74.0060,
+            },
+            emergencyType: EmergencyType.MEDICAL,
+            severity: Severity.HIGH,
+            status: CallStatus.PENDING,
+            description: 'Refreshed data - Patient experiencing chest pain and difficulty breathing',
+            timestamp: new Date(),
+            assignedUnit: undefined,
+            notes: [],
+          },
+          ...calls.slice(0, 4).map((call, index) => ({
+            ...call,
+            timestamp: new Date(Date.now() - index * 60000), // Different timestamps
+          })),
+        ];
+        
+        const mockAnalytics = {
+          totalCalls: mockCalls.length,
+          activeCalls: mockCalls.filter(call => 
+            call.status === CallStatus.PENDING || call.status === CallStatus.IN_PROGRESS
+          ).length,
+          resolvedCalls: mockCalls.filter(call => call.status === CallStatus.RESOLVED).length,
+          pendingCalls: mockCalls.filter(call => call.status === CallStatus.PENDING).length,
+          averageResponseTime: 4.2,
+          callsByType: {
+            [EmergencyType.MEDICAL]: mockCalls.filter(call => call.emergencyType === EmergencyType.MEDICAL).length,
+            [EmergencyType.FIRE]: mockCalls.filter(call => call.emergencyType === EmergencyType.FIRE).length,
+            [EmergencyType.POLICE]: mockCalls.filter(call => call.emergencyType === EmergencyType.POLICE).length,
+            [EmergencyType.ACCIDENT]: mockCalls.filter(call => call.emergencyType === EmergencyType.ACCIDENT).length,
+            [EmergencyType.NATURAL_DISASTER]: mockCalls.filter(call => call.emergencyType === EmergencyType.NATURAL_DISASTER).length,
+            [EmergencyType.OTHER]: mockCalls.filter(call => call.emergencyType === EmergencyType.OTHER).length,
+          },
+          callsBySeverity: {
+            [Severity.LOW]: mockCalls.filter(call => call.severity === Severity.LOW).length,
+            [Severity.MEDIUM]: mockCalls.filter(call => call.severity === Severity.MEDIUM).length,
+            [Severity.HIGH]: mockCalls.filter(call => call.severity === Severity.HIGH).length,
+            [Severity.CRITICAL]: mockCalls.filter(call => call.severity === Severity.CRITICAL).length,
+          },
+          callsByStatus: {
+            [CallStatus.PENDING]: mockCalls.filter(call => call.status === CallStatus.PENDING).length,
+            [CallStatus.IN_PROGRESS]: mockCalls.filter(call => call.status === CallStatus.IN_PROGRESS).length,
+            [CallStatus.DISPATCHED]: mockCalls.filter(call => call.status === CallStatus.DISPATCHED).length,
+            [CallStatus.RESOLVED]: mockCalls.filter(call => call.status === CallStatus.RESOLVED).length,
+            [CallStatus.CANCELLED]: mockCalls.filter(call => call.status === CallStatus.CANCELLED).length,
+          },
+        };
+        
+        setCalls(mockCalls);
+        setAnalytics(mockAnalytics);
+        setError(null); // Clear any previous errors
+      }
     } catch (error) {
-      console.error('Failed to refresh data:', error);
+      console.error('Unexpected error during refresh:', error);
       setError('Failed to refresh dashboard data');
     } finally {
       setLoading(false);
+      console.log('Refresh completed');
     }
   };
 

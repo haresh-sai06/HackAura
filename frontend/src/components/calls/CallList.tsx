@@ -64,7 +64,7 @@ export function CallList({
           className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 h-10"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {loading ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 
