@@ -13,8 +13,8 @@ export function AnalyticsSection({ analytics, loading }: AnalyticsSectionProps) 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold mb-4">Analytics</h2>
-          <p className="text-muted-foreground">Emergency response metrics and trends</p>
+          <h2 className="text-2xl font-bold text-white mb-4">Analytics</h2>
+          <p className="text-white">Emergency response metrics and trends</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -32,11 +32,11 @@ export function AnalyticsSection({ analytics, loading }: AnalyticsSectionProps) 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold mb-4">Analytics</h2>
-          <p className="text-muted-foreground">Emergency response metrics and trends</p>
+          <h2 className="text-2xl font-bold text-white mb-4">Analytics</h2>
+          <p className="text-white">Emergency response metrics and trends</p>
         </div>
         <div className="bg-muted/50 rounded-lg p-8 text-center">
-          <p className="text-muted-foreground">No analytics data available</p>
+          <p className="text-white">No analytics data available</p>
         </div>
       </div>
     );
@@ -45,8 +45,8 @@ export function AnalyticsSection({ analytics, loading }: AnalyticsSectionProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Analytics</h2>
-        <p className="text-muted-foreground">Emergency response metrics and trends</p>
+        <h2 className="text-2xl font-bold text-white mb-4">Analytics</h2>
+        <p className="text-white">Emergency response metrics and trends</p>
       </div>
       <CallAnalytics analytics={analytics} />
     </div>

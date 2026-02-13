@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useUserStore } from '@/store/userStore';
 import { 
   User, 
   Bell, 
@@ -20,8 +21,8 @@ import {
 } from 'lucide-react';
 
 // Simple Label component since we don't have it
-const Label = ({ children, ...props }: React.HTMLAttributes<HTMLLabelElement>) => (
-  <label {...props} className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${props.className || ''}`}>
+const Label = ({ children, htmlFor, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) => (
+  <label {...props} htmlFor={htmlFor} className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${props.className || ''}`}>
     {children}
   </label>
 );
@@ -53,100 +54,109 @@ const Tabs = ({ children, value, onValueChange, ...props }: {
   value?: string;
   onValueChange?: (value: string) => void;
   className?: string;
+}) => {
+  const [activeTab, setActiveTab] = useState(value || 'profile');
+  
+  const handleTabChange = (newValue: string) => {
+    setActiveTab(newValue);
+    onValueChange?.(newValue);
+  };
+  
+  return (
+    <div {...props} className={`w-full ${props.className || ''}`}>
+      {React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+          if (child.type === TabsList) {
+            return React.cloneElement(child as React.ReactElement<any>, { activeTab, onTabChange: handleTabChange });
+          }
+          if (child.type === TabsContent) {
+            return React.cloneElement(child as React.ReactElement<any>, { activeTab });
+          }
+        }
+        return child;
+      })}
+    </div>
+  );
+};
+
+const TabsList = ({ children, activeTab, onTabChange, ...props }: {
+  children: React.ReactNode;
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
+  className?: string;
 }) => (
-  <div {...props} className={`w-full ${props.className || ''}`}>
-    {children}
-  </div>
-);
-
-const TabsList = ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div {...props} className={`inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground ${props.className || ''}`}>
-    {children}
+    {React.Children.map(children, (child) => {
+      if (React.isValidElement(child) && child.type === TabsTrigger) {
+        return React.cloneElement(child as React.ReactElement<any>, { 
+          isActive: activeTab === (child.props as any).value,
+          onClick: () => onTabChange?.((child.props as any).value)
+        });
+      }
+      return child;
+    })}
   </div>
 );
 
-const TabsTrigger = ({ children, value, ...props }: {
+const TabsTrigger = ({ children, value, isActive, onClick, ...props }: {
   children: React.ReactNode;
   value: string;
+  isActive?: boolean;
+  onClick?: () => void;
   className?: string;
 }) => (
   <button
     type="button"
     {...props}
-    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${props.className || ''}`}
-    data-state={props['data-state']}
+    onClick={onClick}
+    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+      isActive 
+        ? 'bg-background text-foreground shadow-sm' 
+        : 'text-muted-foreground hover:text-foreground'
+    } ${props.className || ''}`}
+    data-state={isActive ? 'active' : 'inactive'}
   >
     {children}
   </button>
 );
 
-const TabsContent = ({ children, value, ...props }: {
+const TabsContent = ({ children, value, activeTab, ...props }: {
   children: React.ReactNode;
   value: string;
+  activeTab?: string;
   className?: string;
-}) => (
-  <div
-    {...props}
-    className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${props.className || ''}`}
-    data-state={props['data-state']}
-  >
-    {children}
-  </div>
-);
+}) => {
+  if (activeTab !== value) return null;
+  
+  return (
+    <div
+      {...props}
+      className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${props.className || ''}`}
+      data-state={activeTab === value ? 'active' : 'inactive'}
+    >
+      {children}
+    </div>
+  );
+};
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // Use the user store
+  const {
+    profile,
+    settings,
+    updateProfile,
+    updateSettings,
+    resetProfile,
+    resetSettings,
+    isLoading,
+    setLoading,
+    error,
+    setError
+  } = useUserStore();
+
   const [saving, setSaving] = useState(false);
-
-  // Profile settings
-  const [profile, setProfile] = useState({
-    name: 'John Anderson',
-    email: 'john.anderson@emergency.gov',
-    phone: '+1-555-0101',
-    department: 'Emergency Operations',
-    role: 'Dispatcher',
-    location: 'Central Command',
-  });
-
-  // Notification settings
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    smsNotifications: false,
-    newCallAlerts: true,
-    callAssignedAlerts: true,
-    callResolvedAlerts: true,
-    systemAlerts: true,
-    weeklyReports: false,
-  });
-
-  // Appearance settings
-  const [appearance, setAppearance] = useState({
-    theme: 'light',
-    language: 'english',
-    timezone: 'UTC-5',
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
-    compactMode: false,
-  });
-
-  // Security settings
-  const [security, setSecurity] = useState({
-    twoFactorAuth: true,
-    sessionTimeout: 30,
-    passwordExpiry: 90,
-    loginNotifications: true,
-    apiAccess: false,
-  });
-
-  // System settings
-  const [system, setSystem] = useState({
-    apiEndpoint: 'http://localhost:8000',
-    websocketEndpoint: 'ws://localhost:8000',
-    backupFrequency: 'daily',
-    logLevel: 'info',
-    maxFileSize: 10,
-  });
 
   const handleSave = async (section: string) => {
     setSaving(true);
@@ -154,9 +164,11 @@ export default function SettingsPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       console.log(`Saving ${section} settings...`);
+      // Store is already updated through the updateProfile/updateSettings calls
       // Show success message
     } catch (error) {
       console.error('Failed to save settings:', error);
+      setError('Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -164,19 +176,21 @@ export default function SettingsPage() {
 
   const handleReset = (section: string) => {
     if (confirm(`Are you sure you want to reset ${section} settings to defaults?`)) {
-      console.log(`Resetting ${section} settings...`);
+      if (section === 'profile') {
+        resetProfile();
+      } else {
+        resetSettings();
+      }
+      console.log(`Reset ${section} settings to defaults`);
     }
   };
 
   const handleExport = () => {
-    const settings = {
+    const settingsData = {
       profile,
-      notifications,
-      appearance,
-      security,
-      system,
+      settings,
     };
-    const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(settingsData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -190,15 +204,22 @@ export default function SettingsPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const settings = JSON.parse(e.target?.result as string);
-          setProfile(settings.profile || profile);
-          setNotifications(settings.notifications || notifications);
-          setAppearance(settings.appearance || appearance);
-          setSecurity(settings.security || security);
-          setSystem(settings.system || system);
+          const settingsData = JSON.parse(e.target?.result as string);
+          if (settingsData.profile) {
+            updateProfile(settingsData.profile);
+          }
+          if (settingsData.settings) {
+            // Update each settings category
+            Object.keys(settingsData.settings).forEach((category) => {
+              if (category in settings) {
+                updateSettings(category as keyof typeof settings, settingsData.settings[category]);
+              }
+            });
+          }
           console.log('Settings imported successfully');
         } catch (error) {
           console.error('Failed to import settings:', error);
+          setError('Failed to import settings');
         }
       };
       reader.readAsText(file);
@@ -254,49 +275,46 @@ export default function SettingsPage() {
 
           {/* Profile Settings */}
           <TabsContent value="profile">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-white">Profile Settings</CardTitle>
-                <CardDescription className="text-white/80">Manage your personal information and preferences</CardDescription>
+                <CardTitle>Profile Settings</CardTitle>
+                <CardDescription>Manage your personal information and preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="name" className="text-white">Full Name</Label>
+                      <Label htmlFor="name">Full Name</Label>
                       <Input
                         id="name"
                         value={profile.name}
-                        onChange={(e) => setProfile({...profile, name: e.target.value})}
-                        className="text-white placeholder:text-white/50"
+                        onChange={(e) => updateProfile({ name: e.target.value })}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email" className="text-white">Email Address</Label>
+                      <Label htmlFor="email">Email Address</Label>
                       <Input
                         id="email"
                         type="email"
                         value={profile.email}
-                        onChange={(e) => setProfile({...profile, email: e.target.value})}
-                        className="text-white placeholder:text-white/50"
+                        onChange={(e) => updateProfile({ email: e.target.value })}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-white">Phone Number</Label>
+                      <Label htmlFor="phone">Phone Number</Label>
                       <Input
                         id="phone"
                         value={profile.phone}
-                        onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                        className="text-white placeholder:text-white/50"
+                        onChange={(e) => updateProfile({ phone: e.target.value })}
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="department" className="text-white">Department</Label>
-                      <Select value={profile.department} onValueChange={(value) => setProfile({...profile, department: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="department">Department</Label>
+                      <Select value={profile.department} onValueChange={(value) => updateProfile({ department: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -308,9 +326,9 @@ export default function SettingsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="role" className="text-white">Role</Label>
-                      <Select value={profile.role} onValueChange={(value) => setProfile({...profile, role: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="role">Role</Label>
+                      <Select value={profile.role} onValueChange={(value) => updateProfile({ role: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -322,23 +340,22 @@ export default function SettingsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="location" className="text-white">Location</Label>
+                      <Label htmlFor="location">Location</Label>
                       <Input
                         id="location"
                         value={profile.location}
-                        onChange={(e) => setProfile({...profile, location: e.target.value})}
-                        className="text-white placeholder:text-white/50"
+                        onChange={(e) => updateProfile({ location: e.target.value })}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button onClick={() => handleSave('profile')} disabled={saving} className="text-white">
+                  <Button onClick={() => handleSave('profile')} disabled={saving}>
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outline" onClick={() => handleReset('profile')} className="text-white border-white hover:bg-white hover:text-black">
+                  <Button variant="outline" onClick={() => handleReset('profile')}>
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Reset to Default
                   </Button>
@@ -349,100 +366,92 @@ export default function SettingsPage() {
 
           {/* Notification Settings */}
           <TabsContent value="notifications">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-white">Notification Preferences</CardTitle>
-                <CardDescription className="text-white/80">Choose how you want to receive notifications</CardDescription>
+                <CardTitle>Notification Preferences</CardTitle>
+                <CardDescription>Choose how you want to receive notifications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white">Notification Channels</h3>
+                    <h3 className="text-lg font-semibold">Notification Channels</h3>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="emailNotifications" className="text-white">Email Notifications</Label>
+                      <Label htmlFor="emailNotifications">Email Notifications</Label>
                       <Switch
-                        id="emailNotifications"
-                        checked={notifications.emailNotifications}
-                        onCheckedChange={(checked) => setNotifications({...notifications, emailNotifications: checked})}
+                        checked={settings.notifications.emailNotifications}
+                        onCheckedChange={(checked) => updateSettings('notifications', { emailNotifications: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="pushNotifications" className="text-white">Push Notifications</Label>
+                      <Label htmlFor="pushNotifications">Push Notifications</Label>
                       <Switch
-                        id="pushNotifications"
-                        checked={notifications.pushNotifications}
-                        onCheckedChange={(checked) => setNotifications({...notifications, pushNotifications: checked})}
+                        checked={settings.notifications.pushNotifications}
+                        onCheckedChange={(checked) => updateSettings('notifications', { pushNotifications: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="smsNotifications" className="text-white">SMS Notifications</Label>
+                      <Label htmlFor="smsNotifications">SMS Notifications</Label>
                       <Switch
-                        id="smsNotifications"
-                        checked={notifications.smsNotifications}
-                        onCheckedChange={(checked) => setNotifications({...notifications, smsNotifications: checked})}
+                        checked={settings.notifications.smsNotifications}
+                        onCheckedChange={(checked) => updateSettings('notifications', { smsNotifications: checked })}
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white">Alert Types</h3>
+                    <h3 className="text-lg font-semibold">Alert Types</h3>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="newCallAlerts" className="text-white">New Call Alerts</Label>
+                      <Label htmlFor="newCallAlerts">New Call Alerts</Label>
                       <Switch
-                        id="newCallAlerts"
-                        checked={notifications.newCallAlerts}
-                        onCheckedChange={(checked) => setNotifications({...notifications, newCallAlerts: checked})}
+                        checked={settings.notifications.newCallAlerts}
+                        onCheckedChange={(checked) => updateSettings('notifications', { newCallAlerts: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="callAssignedAlerts" className="text-white">Call Assigned Alerts</Label>
+                      <Label htmlFor="callAssignedAlerts">Call Assigned Alerts</Label>
                       <Switch
-                        id="callAssignedAlerts"
-                        checked={notifications.callAssignedAlerts}
-                        onCheckedChange={(checked) => setNotifications({...notifications, callAssignedAlerts: checked})}
+                        checked={settings.notifications.callAssignedAlerts}
+                        onCheckedChange={(checked) => updateSettings('notifications', { callAssignedAlerts: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="callResolvedAlerts" className="text-white">Call Resolved Alerts</Label>
+                      <Label htmlFor="callResolvedAlerts">Call Resolved Alerts</Label>
                       <Switch
-                        id="callResolvedAlerts"
-                        checked={notifications.callResolvedAlerts}
-                        onCheckedChange={(checked) => setNotifications({...notifications, callResolvedAlerts: checked})}
+                        checked={settings.notifications.callResolvedAlerts}
+                        onCheckedChange={(checked) => updateSettings('notifications', { callResolvedAlerts: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="systemAlerts" className="text-white">System Alerts</Label>
+                      <Label htmlFor="systemAlerts">System Alerts</Label>
                       <Switch
-                        id="systemAlerts"
-                        checked={notifications.systemAlerts}
-                        onCheckedChange={(checked) => setNotifications({...notifications, systemAlerts: checked})}
+                        checked={settings.notifications.systemAlerts}
+                        onCheckedChange={(checked) => updateSettings('notifications', { systemAlerts: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="weeklyReports" className="text-white">Weekly Reports</Label>
+                      <Label htmlFor="weeklyReports">Weekly Reports</Label>
                       <Switch
-                        id="weeklyReports"
-                        checked={notifications.weeklyReports}
-                        onCheckedChange={(checked) => setNotifications({...notifications, weeklyReports: checked})}
+                        checked={settings.notifications.weeklyReports}
+                        onCheckedChange={(checked) => updateSettings('notifications', { weeklyReports: checked })}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button onClick={() => handleSave('notifications')} disabled={saving} className="text-white">
+                  <Button onClick={() => handleSave('notifications')} disabled={saving}>
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outline" onClick={() => handleReset('notifications')} className="text-white border-white hover:bg-white hover:text-black">
+                  <Button variant="outline" onClick={() => handleReset('notifications')}>
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Reset to Default
                   </Button>
@@ -453,18 +462,18 @@ export default function SettingsPage() {
 
           {/* Appearance Settings */}
           <TabsContent value="appearance">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-white">Appearance Settings</CardTitle>
-                <CardDescription className="text-white/80">Customize the look and feel of your dashboard</CardDescription>
+                <CardTitle>Appearance Settings</CardTitle>
+                <CardDescription>Customize the look and feel of your dashboard</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="theme" className="text-white">Theme</Label>
-                      <Select value={appearance.theme} onValueChange={(value) => setAppearance({...appearance, theme: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="theme">Theme</Label>
+                      <Select value={settings.appearance.theme} onValueChange={(value) => updateSettings('appearance', { theme: value as 'light' | 'dark' | 'system' })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -476,9 +485,9 @@ export default function SettingsPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="language" className="text-white">Language</Label>
-                      <Select value={appearance.language} onValueChange={(value) => setAppearance({...appearance, language: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="language">Language</Label>
+                      <Select value={settings.appearance.language} onValueChange={(value) => updateSettings('appearance', { language: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -490,9 +499,9 @@ export default function SettingsPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="timezone" className="text-white">Timezone</Label>
-                      <Select value={appearance.timezone} onValueChange={(value) => setAppearance({...appearance, timezone: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="timezone">Timezone</Label>
+                      <Select value={settings.appearance.timezone} onValueChange={(value) => updateSettings('appearance', { timezone: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -507,9 +516,9 @@ export default function SettingsPage() {
                   
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="dateFormat" className="text-white">Date Format</Label>
-                      <Select value={appearance.dateFormat} onValueChange={(value) => setAppearance({...appearance, dateFormat: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="dateFormat">Date Format</Label>
+                      <Select value={settings.appearance.dateFormat} onValueChange={(value) => updateSettings('appearance', { dateFormat: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -521,9 +530,9 @@ export default function SettingsPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="timeFormat" className="text-white">Time Format</Label>
-                      <Select value={appearance.timeFormat} onValueChange={(value) => setAppearance({...appearance, timeFormat: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="timeFormat">Time Format</Label>
+                      <Select value={settings.appearance.timeFormat} onValueChange={(value) => updateSettings('appearance', { timeFormat: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -534,22 +543,21 @@ export default function SettingsPage() {
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="compactMode" className="text-white">Compact Mode</Label>
+                      <Label htmlFor="compactMode">Compact Mode</Label>
                       <Switch
-                        id="compactMode"
-                        checked={appearance.compactMode}
-                        onCheckedChange={(checked) => setAppearance({...appearance, compactMode: checked})}
+                        checked={settings.appearance.compactMode}
+                        onCheckedChange={(checked) => updateSettings('appearance', { compactMode: checked })}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button onClick={() => handleSave('appearance')} disabled={saving} className="text-white">
+                  <Button onClick={() => handleSave('appearance')} disabled={saving}>
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outline" onClick={() => handleReset('appearance')} className="text-white border-white hover:bg-white hover:text-black">
+                  <Button variant="outline" onClick={() => handleReset('appearance')}>
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Reset to Default
                   </Button>
@@ -560,88 +568,83 @@ export default function SettingsPage() {
 
           {/* Security Settings */}
           <TabsContent value="security">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-white">Security Settings</CardTitle>
-                <CardDescription className="text-white/80">Manage your account security and access controls</CardDescription>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Manage your account security and access controls</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="twoFactorAuth" className="text-white">Two-Factor Authentication</Label>
-                        <p className="text-sm text-white/80">
+                        <Label htmlFor="twoFactorAuth">Two-Factor Authentication</Label>
+                        <p className="text-sm text-gray-600">
                           Add an extra layer of security to your account
                         </p>
                       </div>
                       <Switch
-                        id="twoFactorAuth"
-                        checked={security.twoFactorAuth}
-                        onCheckedChange={(checked) => setSecurity({...security, twoFactorAuth: checked})}
+                        checked={settings.security.twoFactorAuth}
+                        onCheckedChange={(checked) => updateSettings('security', { twoFactorAuth: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="loginNotifications" className="text-white">Login Notifications</Label>
-                        <p className="text-sm text-white/80">
+                        <Label htmlFor="loginNotifications">Login Notifications</Label>
+                        <p className="text-sm text-gray-600">
                           Get notified when someone logs into your account
                         </p>
                       </div>
                       <Switch
-                        id="loginNotifications"
-                        checked={security.loginNotifications}
-                        onCheckedChange={(checked) => setSecurity({...security, loginNotifications: checked})}
+                        checked={settings.security.loginNotifications}
+                        onCheckedChange={(checked) => updateSettings('security', { loginNotifications: checked })}
                       />
                     </div>
                     
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="apiAccess" className="text-white">API Access</Label>
-                        <p className="text-sm text-white/80">
+                        <Label htmlFor="apiAccess">API Access</Label>
+                        <p className="text-sm text-gray-600">
                           Allow third-party applications to access your account
                         </p>
                       </div>
                       <Switch
-                        id="apiAccess"
-                        checked={security.apiAccess}
-                        onCheckedChange={(checked) => setSecurity({...security, apiAccess: checked})}
+                        checked={settings.security.apiAccess}
+                        onCheckedChange={(checked) => updateSettings('security', { apiAccess: checked })}
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="sessionTimeout" className="text-white">Session Timeout (minutes)</Label>
+                      <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
                       <Input
                         id="sessionTimeout"
                         type="number"
-                        value={security.sessionTimeout}
-                        onChange={(e) => setSecurity({...security, sessionTimeout: parseInt(e.target.value)})}
-                        className="text-white placeholder:text-white/50"
+                        value={settings.security.sessionTimeout}
+                        onChange={(e) => updateSettings('security', { sessionTimeout: parseInt(e.target.value) })}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="passwordExpiry" className="text-white">Password Expiry (days)</Label>
+                      <Label htmlFor="passwordExpiry">Password Expiry (days)</Label>
                       <Input
                         id="passwordExpiry"
                         type="number"
-                        value={security.passwordExpiry}
-                        onChange={(e) => setSecurity({...security, passwordExpiry: parseInt(e.target.value)})}
-                        className="text-white placeholder:text-white/50"
+                        value={settings.security.passwordExpiry}
+                        onChange={(e) => updateSettings('security', { passwordExpiry: parseInt(e.target.value) })}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button onClick={() => handleSave('security')} disabled={saving} className="text-white">
+                  <Button onClick={() => handleSave('security')} disabled={saving}>
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outline" onClick={() => handleReset('security')} className="text-white border-white hover:bg-white hover:text-black">
+                  <Button variant="outline" onClick={() => handleReset('security')}>
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Reset to Default
                   </Button>
@@ -652,38 +655,36 @@ export default function SettingsPage() {
 
           {/* System Settings */}
           <TabsContent value="system">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-white">System Configuration</CardTitle>
-                <CardDescription className="text-white/80">Configure system endpoints and technical settings</CardDescription>
+                <CardTitle>System Configuration</CardTitle>
+                <CardDescription>Configure system endpoints and technical settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="apiEndpoint" className="text-white">API Endpoint</Label>
+                      <Label htmlFor="apiEndpoint">API Endpoint</Label>
                       <Input
                         id="apiEndpoint"
-                        value={system.apiEndpoint}
-                        onChange={(e) => setSystem({...system, apiEndpoint: e.target.value})}
-                        className="text-white placeholder:text-white/50"
+                        value={settings.system.apiEndpoint}
+                        onChange={(e) => updateSettings('system', { apiEndpoint: e.target.value })}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="websocketEndpoint" className="text-white">WebSocket Endpoint</Label>
+                      <Label htmlFor="websocketEndpoint">WebSocket Endpoint</Label>
                       <Input
                         id="websocketEndpoint"
-                        value={system.websocketEndpoint}
-                        onChange={(e) => setSystem({...system, websocketEndpoint: e.target.value})}
-                        className="text-white placeholder:text-white/50"
+                        value={settings.system.websocketEndpoint}
+                        onChange={(e) => updateSettings('system', { websocketEndpoint: e.target.value })}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="backupFrequency" className="text-white">Backup Frequency</Label>
-                      <Select value={system.backupFrequency} onValueChange={(value) => setSystem({...system, backupFrequency: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="backupFrequency">Backup Frequency</Label>
+                      <Select value={settings.system.backupFrequency} onValueChange={(value) => updateSettings('system', { backupFrequency: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -698,9 +699,9 @@ export default function SettingsPage() {
                   
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="logLevel" className="text-white">Log Level</Label>
-                      <Select value={system.logLevel} onValueChange={(value) => setSystem({...system, logLevel: value})}>
-                        <SelectTrigger className="text-white placeholder:text-white/50">
+                      <Label htmlFor="logLevel">Log Level</Label>
+                      <Select value={settings.system.logLevel} onValueChange={(value) => updateSettings('system', { logLevel: value })}>
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -713,24 +714,23 @@ export default function SettingsPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="maxFileSize" className="text-white">Max File Size (MB)</Label>
+                      <Label htmlFor="maxFileSize">Max File Size (MB)</Label>
                       <Input
                         id="maxFileSize"
                         type="number"
-                        value={system.maxFileSize}
-                        onChange={(e) => setSystem({...system, maxFileSize: parseInt(e.target.value)})}
-                        className="text-white placeholder:text-white/50"
+                        value={settings.system.maxFileSize}
+                        onChange={(e) => updateSettings('system', { maxFileSize: parseInt(e.target.value) })}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button onClick={() => handleSave('system')} disabled={saving} className="text-white">
+                  <Button onClick={() => handleSave('system')} disabled={saving}>
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outline" onClick={() => handleReset('system')} className="text-white border-white hover:bg-white hover:text-black">
+                  <Button variant="outline" onClick={() => handleReset('system')}>
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Reset to Default
                   </Button>

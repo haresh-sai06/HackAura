@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigationData } from '@/hooks/useNavigationData';
+import { useUserStore } from '@/store/userStore';
 
 interface SidebarProps {
   className?: string;
@@ -65,6 +66,9 @@ export function Sidebar({ className }: SidebarProps) {
   
   // Get real-time navigation data
   const { activeCallsCount, unreadNotificationsCount, loading, isConnected } = useNavigationData();
+  
+  // Get user profile data
+  const { profile, getInitials } = useUserStore();
 
   // Function to check if a route is active
   const isActive = (href: string) => {
@@ -105,7 +109,7 @@ export function Sidebar({ className }: SidebarProps) {
           onClick={handleClick}
           className={cn(
             // Enhanced base styles with professional dark theme
-            'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-300 ease-out relative overflow-hidden',
+            'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-out relative overflow-hidden',
             // Improved hover effects with scale and glow
             'transform hover:scale-[1.02] hover:shadow-lg',
             // Dark theme colors with glass effect
@@ -114,21 +118,14 @@ export function Sidebar({ className }: SidebarProps) {
             active
               ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl border border-blue-500/40 scale-[1.02]'
               : 'text-slate-400/80 hover:text-slate-200',
-            // Subtle background animation on hover
-            isHovered && !active && 'before:absolute before:inset-0 before:bg-gradient-to-r before:from-blue-500/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100'
           )}
         >
-          {/* Hover glow effect */}
-          {isHovered && !active && (
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-lg animate-pulse" />
-          )}
           
           <Icon className={cn(
-            'h-4 w-4 transition-all duration-300 flex-shrink-0 relative z-10',
+            'h-4 w-4 transition-all duration-200 flex-shrink-0 relative z-10',
             active 
-              ? 'text-white scale-110 drop-shadow-sm' 
-              : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105 group-hover:drop-shadow-sm',
-            isHovered && !active && 'animate-pulse'
+              ? 'text-white scale-105 drop-shadow-sm' 
+              : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105 group-hover:drop-shadow-sm'
           )} />
           
           <div className="flex-1 flex items-center justify-between relative z-10">
@@ -137,9 +134,9 @@ export function Sidebar({ className }: SidebarProps) {
               <Badge 
                 variant="secondary" 
                 className={cn(
-                  'inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-semibold rounded-full flex-shrink-0 shadow-md transition-all duration-300',
-                  'bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse',
-                  isHovered && 'scale-110 shadow-lg'
+                  'inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-semibold rounded-full flex-shrink-0 shadow-md transition-all duration-200',
+                  'bg-gradient-to-r from-red-500 to-orange-500 text-white',
+                  isHovered && 'scale-105 shadow-lg'
                 )}
               >
                 {loading ? '...' : badgeValue}
@@ -209,21 +206,6 @@ export function Sidebar({ className }: SidebarProps) {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
-            
-            {/* Desktop connection status - always visible */}
-            <div className="hidden lg:flex items-center gap-2 ml-2 min-w-0">
-              <div className="flex items-center gap-1 min-w-0">
-                {isConnected ? (
-                  <Wifi className="h-3 w-3 text-green-400 flex-shrink-0" />
-                ) : (
-                  <WifiOff className="h-3 w-3 text-red-400 flex-shrink-0" />
-                )}
-                <span className="text-xs text-slate-400 truncate min-w-0">
-                  {isConnected ? 'Live' : 'Offline'}
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Navigation */}
@@ -237,19 +219,13 @@ export function Sidebar({ className }: SidebarProps) {
           <div className="border-t border-slate-700/50 p-4 bg-slate-800/30">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center shadow-md">
-                <Users className="h-4 w-4 text-slate-300" />
+                <span className="text-xs font-semibold text-slate-200">{getInitials()}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate text-slate-100">John Doe</p>
-                <p className="text-xs text-slate-400 truncate">Dispatcher</p>
+                <p className="text-sm font-semibold truncate text-slate-100">{profile.name}</p>
+                <p className="text-xs text-slate-400 truncate">{profile.role}</p>
               </div>
-            </div>
-            <div className="mt-3 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
-                <span className="text-xs text-slate-400">1 Issue</span>
-              </div>
-              <Button variant="ghost" size="icon" className="w-full text-slate-400 hover:text-slate-100 hover:bg-slate-700/50 transition-colors-smooth">
+              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-100 hover:bg-slate-700/50 transition-colors-smooth">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
