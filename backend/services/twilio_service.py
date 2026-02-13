@@ -1,6 +1,6 @@
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from typing import Optional
-from config import settings
+from backend.config import settings
 
 
 class TwilioService:

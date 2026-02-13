@@ -4,6 +4,7 @@ import uvicorn
 import logging
 from backend.config import settings
 from backend.routes import voice_router
+from backend.routes import emergency_router, analytics_router, team_router, notifications_router
 
 # Configure logging
 logging.basicConfig(
@@ -14,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="Voice AI Phone Assistant",
-    description="A Twilio-powered voice assistant using OpenAI",
-    version="1.0.0"
+    title="Voice AI Phone Assistant - Professional Edition",
+    description="A professional Twilio-powered voice assistant with emergency calls, analytics, team management, and notifications",
+    version="2.0.0"
 )
 
 # Add CORS middleware
@@ -30,18 +31,33 @@ app.add_middleware(
 
 # Include routers
 app.include_router(voice_router, prefix="/api", tags=["voice"])
+app.include_router(emergency_router, prefix="/api", tags=["emergency"])
+app.include_router(analytics_router, prefix="/api", tags=["analytics"])
+app.include_router(team_router, prefix="/api", tags=["team"])
+app.include_router(notifications_router, prefix="/api", tags=["notifications"])
 
 
 @app.get("/")
 async def root():
     """Root endpoint to check if server is running"""
     return {
-        "message": "Voice AI Phone Assistant is running",
+        "message": "Voice AI Phone Assistant - Professional Edition is running",
         "status": "active",
+        "version": "2.0.0",
+        "features": [
+            "Voice calls with AI assistant",
+            "Emergency call handling",
+            "Analytics and reporting",
+            "Team management",
+            "Notifications system"
+        ],
         "endpoints": {
-            "voice_webhook": "/api/voice",
-            "process_speech": "/api/voice/process",
-            "call_status": "/api/voice/status"
+            "voice": "/api/voice",
+            "emergency": "/api/emergency",
+            "analytics": "/api/analytics",
+            "team": "/api/team",
+            "notifications": "/api/notifications",
+            "health": "/health"
         }
     }
 
@@ -51,8 +67,15 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "service": "Voice AI Phone Assistant",
-        "version": "1.0.0"
+        "service": "Voice AI Phone Assistant - Professional Edition",
+        "version": "2.0.0",
+        "features": {
+            "voice": "operational",
+            "emergency": "operational", 
+            "analytics": "operational",
+            "team": "operational",
+            "notifications": "operational"
+        }
     }
 
 

@@ -1,6 +1,6 @@
 import google.generativeai as genai
 from typing import List, Dict, Optional
-from config import settings
+from backend.config import settings
 
 
 class GeminiService:
