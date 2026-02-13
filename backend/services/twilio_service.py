@@ -1,7 +1,12 @@
 from twilio.twiml.voice_response import VoiceResponse, Gather, Record
 from typing import Optional
+<<<<<<< HEAD
 from config import settings
 from models.emergency_schema import TriageResult
+=======
+from backend.config import settings
+
+>>>>>>> 91c63386882b7ea903abf849c9707bba1e9f19a8
 
 class TwilioService:
     def __init__(self):

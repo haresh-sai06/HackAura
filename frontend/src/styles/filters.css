@@ -1,0 +1,64 @@
+/* Filters Card Specific Styles */
+.filters-card {
+  /* Ensure all text inside filters card is visible */
+  color: white !important;
+}
+
+/* Input field styles */
+.filters-card input {
+  color: white !important;
+  background-color: rgba(31, 41, 55, 0.9) !important; /* Darker input background */
+}
+
+/* Placeholder text */
+.filters-card ::placeholder {
+  color: #9ca3af !important; /* Light gray for placeholder */
+  opacity: 1 !important;
+}
+
+/* Select dropdown styles */
+.filters-card select {
+  color: white !important;
+  background-color: rgba(31, 41, 55, 0.9) !important; /* Darker select background */
+}
+
+/* Select value (displayed text) */
+.filters-card [data-value] {
+  color: white !important;
+}
+
+/* Select dropdown items */
+.filters-card [role="option"] {
+  color: white !important;
+  background-color: #1f2937 !important; /* Dark background for dropdown items */
+}
+
+/* Select dropdown content */
+.filters-card [data-state="open"] > div {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+}
+
+/* Focus states */
+.filters-card input:focus,
+.filters-card select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 1px #3b82f6 !important;
+}
+
+/* Hover states */
+.filters-card input:hover,
+.filters-card select:hover {
+  border-color: #4b5563 !important;
+}
+
+/* Ensure dropdown text is always visible */
+.filters-card [data-placeholder] {
+  color: #9ca3af !important;
+}
+
+/* Select trigger arrow */
+.filters-card [data-state="closed"] > svg,
+.filters-card [data-state="open"] > svg {
+  color: white !important;
+}

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, RefreshCw } from 'lucide-react';
+import '@/styles/filters.css';
 
 interface CallListProps {
   calls: EmergencyCall[];
@@ -52,10 +53,10 @@ export function CallList({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Emergency Calls</h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">{activeCallsCount}</span> active calls • 
-            <span className="font-semibold text-gray-700 dark:text-gray-300">{calls.length}</span> total
+          <h2 className="text-3xl font-bold text-white">Emergency Calls</h2>
+          <p className="text-gray-300 dark:text-gray-400 mt-1">
+            <span className="font-semibold text-white">{activeCallsCount}</span> active calls • 
+            <span className="font-semibold text-white">{calls.length}</span> total
           </p>
         </div>
         <Button 
@@ -64,29 +65,29 @@ export function CallList({
           className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 h-10"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {loading ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Filters</h3>
+      <div className="filters-card bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h3 className="text-lg font-semibold text-white mb-4">Filters</h3>
         
         {/* Search */}
         <div className="relative mb-4">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
           <Input
             placeholder="Search calls by name, phone, location, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+            className="filters-card pl-12 h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 text-white placeholder:text-gray-400"
           />
         </div>
 
         {/* Filter dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Select value={statusFilter} onValueChange={(value: string) => setStatusFilter(value as CallStatus | 'all')}>
-            <SelectTrigger className="h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600">
+            <SelectTrigger className="filters-card h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-white">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -100,7 +101,7 @@ export function CallList({
           </Select>
 
           <Select value={severityFilter} onValueChange={(value: string) => setSeverityFilter(value as Severity | 'all')}>
-            <SelectTrigger className="h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600">
+            <SelectTrigger className="filters-card h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-white">
               <SelectValue placeholder="Filter by severity" />
             </SelectTrigger>
             <SelectContent>
@@ -113,7 +114,7 @@ export function CallList({
           </Select>
 
           <Select value={typeFilter} onValueChange={(value: string) => setTypeFilter(value as EmergencyType | 'all')}>
-            <SelectTrigger className="h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600">
+            <SelectTrigger className="filters-card h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-white">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
             <SelectContent>
@@ -131,7 +132,7 @@ export function CallList({
         {/* Active filters */}
         {(statusFilter !== 'all' || severityFilter !== 'all' || typeFilter !== 'all' || searchTerm) && (
           <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Active filters:</span>
+            <span className="text-sm font-medium text-white">Active filters:</span>
             {statusFilter !== 'all' && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-600">
                 Status: {statusFilter}
@@ -161,7 +162,7 @@ export function CallList({
                 setSeverityFilter('all');
                 setTypeFilter('all');
               }}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+              className="text-white hover:text-gray-200 dark:text-white dark:hover:text-gray-200"
             >
               Clear all
             </Button>
