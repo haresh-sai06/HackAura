@@ -15,7 +15,7 @@ class TwilioService:
         gather = Gather(
             input='speech',
             timeout=settings.SPEECH_TIMEOUT,
-            action='/voice/process',
+            action='/api/voice/process',
             method='POST',
             language='en-US'
         )
@@ -42,7 +42,7 @@ class TwilioService:
         gather = Gather(
             input='speech',
             timeout=settings.SPEECH_TIMEOUT,
-            action='/voice/process',
+            action='/api/voice/process',
             method='POST',
             language='en-US'
         )

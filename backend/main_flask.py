@@ -7,8 +7,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config import settings
-from services import twilio_service
-from services import gemini_service as ai_service
+from services import twilio_service, gemini_service
 
 # Configure logging
 logging.basicConfig(
@@ -77,12 +76,17 @@ def process_speech_input():
         speech_result = request.form.get('SpeechResult', '')
         unstable_speech_result = request.form.get('UnstableSpeechResult', '')
         
-        # Use the stable speech result if available, otherwise use unstable
+        # Use stable speech result if available, otherwise use unstable
         user_input = speech_result or unstable_speech_result or ""
         
-        logger.info(f"Processing speech input for call {call_sid}: {user_input}")
+        # DEBUG: Log what Twilio sent us
+        logger.info(f" TWILIO SPEECH INPUT for call {call_sid}:")
+        logger.info(f"   SpeechResult: '{speech_result}'")
+        logger.info(f"   UnstableSpeechResult: '{unstable_speech_result}'")
+        logger.info(f"   Final user_input: '{user_input}'")
         
         if not user_input:
+            logger.info(f" No speech detected, generating goodbye response")
             # No speech detected, generate goodbye response
             twiml_response = twilio_service.generate_goodbye_response()
             return Response(twiml_response, mimetype='application/xml')
@@ -95,15 +99,18 @@ def process_speech_input():
         
         # Generate AI response based on provider
         if settings.AI_PROVIDER.lower() == "gemini":
-            logger.info(f"Using Gemini for call {call_sid}")
+            logger.info(f"🤖 Using Gemini for call {call_sid}")
+            logger.info(f"📝 Sending to Gemini: '{user_input}'")
             try:
-                ai_response = gemini_service.generate_response(call_sid, user_input)
-                logger.info(f"Gemini response: {ai_response}")
+                import asyncio
+                ai_response = asyncio.run(gemini_service.generate_response(call_sid, user_input))
+                logger.info(f"✅ Gemini response: {ai_response}")
             except Exception as e:
-                logger.error(f"Gemini error: {e}")
+                logger.error(f"❌ Gemini error: {type(e).__name__}: {str(e)}")
+                logger.error(f"🔍 Full error details: {repr(e)}")
                 ai_response = "I'm sorry, I'm having trouble understanding. Could you please repeat that?"
         else:
-            logger.info(f"Using OpenAI for call {call_sid}")
+            logger.info(f"🤖 Using OpenAI for call {call_sid}")
             import asyncio
             ai_response = asyncio.run(openai_service.generate_response(call_sid, user_input))
         
