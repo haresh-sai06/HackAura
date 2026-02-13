@@ -158,7 +158,7 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Notifications</h1>
+            <h1 className="text-3xl font-bold text-black">Notifications</h1>
             {unreadCount > 0 && (
               <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 px-3 py-1">
                 {unreadCount} unread

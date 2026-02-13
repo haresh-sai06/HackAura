@@ -9,7 +9,7 @@ class WebSocketService {
 
   connect(token?: string): Promise<Socket> {
     return new Promise((resolve, reject) => {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8000';
       
       this.socket = io(wsUrl, {
         auth: token ? { token } : undefined,
@@ -17,8 +17,13 @@ class WebSocketService {
       });
 
       this.socket.on('connect', () => {
-        console.log('WebSocket connected');
+        console.log('WebSocket connected to HackAura backend');
         this.reconnectAttempts = 0;
+        
+        // Subscribe to analytics updates
+        this.socket?.emit('subscribe_analytics', {});
+        this.socket?.emit('subscribe_calls', {});
+        
         resolve(this.socket!);
       });
 
@@ -80,6 +85,15 @@ class WebSocketService {
     this.socket?.on('system_update', callback);
   }
 
+  // Analytics event listeners
+  onAnalyticsUpdate(callback: (data: any) => void): void {
+    this.socket?.on('analytics_update', callback);
+  }
+
+  onStatsUpdate(callback: (data: any) => void): void {
+    this.socket?.on('stats_update', callback);
+  }
+
   // Event emitters
   emitCallUpdate(callId: string, updates: Partial<EmergencyCall>): void {
     this.socket?.emit('call_update', { callId, updates });
@@ -120,7 +134,7 @@ class WebSocketService {
 export const wsService = new WebSocketService();
 
 // Hook for using WebSocket in components
-export const useWebSocket = () => {
+export const useWebSocketService = () => {
   const connect = (token?: string) => wsService.connect(token);
   const disconnect = () => wsService.disconnect();
   const isConnected = () => wsService.isConnected();
@@ -134,6 +148,8 @@ export const useWebSocket = () => {
     onNotification: wsService.onNotification.bind(wsService),
     onUserStatus: wsService.onUserStatus.bind(wsService),
     onSystemUpdate: wsService.onSystemUpdate.bind(wsService),
+    onAnalyticsUpdate: wsService.onAnalyticsUpdate.bind(wsService),
+    onStatsUpdate: wsService.onStatsUpdate.bind(wsService),
     emitCallUpdate: wsService.emitCallUpdate.bind(wsService),
     emitUserStatus: wsService.emitUserStatus.bind(wsService),
     emitJoinRoom: wsService.emitJoinRoom.bind(wsService),
@@ -143,3 +159,6 @@ export const useWebSocket = () => {
     getSocket: wsService.getSocket.bind(wsService),
   };
 };
+
+// Legacy export for compatibility
+export const useWebSocket = useWebSocketService;

@@ -1,19 +1,35 @@
 export interface EmergencyCall {
-  id: string;
-  callerName: string;
-  phoneNumber: string;
-  location: {
+  id: string | number;
+  callerName?: string;
+  phoneNumber?: string;
+  from_number?: string;
+  to_number?: string;
+  location?: {
     address: string;
     latitude: number;
     longitude: number;
   };
+  location_address?: string;
+  location_latitude?: number;
+  location_longitude?: number;
   emergencyType: EmergencyType;
   severity: Severity;
+  severity_level?: string;
   status: CallStatus;
-  description: string;
-  timestamp: Date;
+  description?: string;
+  transcript?: string;
+  timestamp: Date | string;
+  created_at?: Date | string;
+  updated_at?: Date | string;
   estimatedArrival?: Date;
   assignedUnit?: string;
+  assigned_service?: string;
+  priority?: number;
+  confidence?: number;
+  risk_indicators?: string[];
+  summary?: string;
+  processing_time_ms?: number;
+  metadata?: any;
   callDuration?: number;
   audioRecording?: string;
   notes?: string[];
@@ -61,6 +77,9 @@ export interface CallAnalytics {
   averageResponseTime: number;
   resolvedCalls: number;
   pendingCalls: number;
+  callsByHour?: Array<{ hour: number; calls: number }>;
+  callsByDay?: Array<{ day: string; calls: number }>;
+  lastUpdated?: string;
 }
 
 export interface User {

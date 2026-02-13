@@ -4,17 +4,36 @@ import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, TrendingUp, Users, Clock, AlertTriangle } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Clock, AlertTriangle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { CallAnalytics } from '@/types/emergency';
+import { useRealTimeAnalytics } from '@/hooks/useRealTimeAnalytics';
 
 export default function AnalyticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
 
-  // Mock analytics data
-  const analytics = {
+  // Use real-time analytics hook
+  const { 
+    analytics, 
+    loading, 
+    error, 
+    lastUpdated, 
+    isConnected, 
+    refresh 
+  } = useRealTimeAnalytics(30000); // Update every 30 seconds
+
+  // Get actual connection status (isConnected is a function)
+  const connectionStatus = isConnected();
+
+  // Mock data fallback
+  const mockAnalytics: CallAnalytics = {
     totalCalls: 156,
-    activeCalls: 12,
-    resolvedCalls: 144,
-    averageResponseTime: 4.2,
+    callsByStatus: {
+      pending: 12,
+      in_progress: 8,
+      dispatched: 24,
+      resolved: 144,
+      cancelled: 0,
+    },
     callsByType: {
       medical: 45,
       fire: 28,
@@ -29,42 +48,63 @@ export default function AnalyticsPage() {
       high: 54,
       critical: 12,
     },
+    averageResponseTime: 4.2,
+    resolvedCalls: 144,
+    pendingCalls: 12,
+  };
+
+  const currentAnalytics = analytics || mockAnalytics;
+  
+  // Debug: Show which data source is being used
+  console.log('Using analytics data:', analytics ? 'REAL DATA' : 'MOCK DATA');
+  console.log('Current analytics data:', currentAnalytics);
+  console.log('WebSocket connected:', connectionStatus);
+  console.log('Last updated:', lastUpdated);
+
+  // Additional mock data for charts (fallback)
+  const mockChartData = {
     callsByHour: [
-      { hour: 0, calls: 3 },
-      { hour: 1, calls: 2 },
-      { hour: 2, calls: 1 },
-      { hour: 3, calls: 2 },
-      { hour: 4, calls: 4 },
-      { hour: 5, calls: 6 },
-      { hour: 6, calls: 8 },
-      { hour: 7, calls: 12 },
-      { hour: 8, calls: 15 },
-      { hour: 9, calls: 14 },
-      { hour: 10, calls: 13 },
-      { hour: 11, calls: 11 },
-      { hour: 12, calls: 9 },
-      { hour: 13, calls: 10 },
-      { hour: 14, calls: 12 },
-      { hour: 15, calls: 14 },
-      { hour: 16, calls: 16 },
-      { hour: 17, calls: 13 },
-      { hour: 18, calls: 11 },
-      { hour: 19, calls: 9 },
-      { hour: 20, calls: 7 },
-      { hour: 21, calls: 5 },
-      { hour: 22, calls: 4 },
-      { hour: 23, calls: 3 },
+      { hour: 0, calls: 0 },
+      { hour: 1, calls: 0 },
+      { hour: 2, calls: 0 },
+      { hour: 3, calls: 0 },
+      { hour: 4, calls: 0 },
+      { hour: 5, calls: 0 },
+      { hour: 6, calls: 0 },
+      { hour: 7, calls: 0 },
+      { hour: 8, calls: 0 },
+      { hour: 9, calls: 0 },
+      { hour: 10, calls: 0 },
+      { hour: 11, calls: 0 },
+      { hour: 12, calls: 0 },
+      { hour: 13, calls: 0 },
+      { hour: 14, calls: 0 },
+      { hour: 15, calls: 0 },
+      { hour: 16, calls: 0 },
+      { hour: 17, calls: 0 },
+      { hour: 18, calls: 0 },
+      { hour: 19, calls: 0 },
+      { hour: 20, calls: 0 },
+      { hour: 21, calls: 0 },
+      { hour: 22, calls: 0 },
+      { hour: 23, calls: 0 },
     ],
     callsByDay: [
-      { day: 'Mon', calls: 18 },
-      { day: 'Tue', calls: 24 },
-      { day: 'Wed', calls: 22 },
-      { day: 'Thu', calls: 31 },
-      { day: 'Fri', calls: 28 },
-      { day: 'Sat', calls: 19 },
-      { day: 'Sun', calls: 14 },
+      { day: 'Mon', calls: 0 },
+      { day: 'Tue', calls: 0 },
+      { day: 'Wed', calls: 0 },
+      { day: 'Thu', calls: 0 },
+      { day: 'Fri', calls: 0 },
+      { day: 'Sat', calls: 0 },
+      { day: 'Sun', calls: 0 },
     ],
   };
+
+  // Use real-time chart data if available, otherwise use mock data
+  const chartData = analytics ? {
+    callsByHour: currentAnalytics.callsByHour || mockChartData.callsByHour,
+    callsByDay: currentAnalytics.callsByDay || mockChartData.callsByDay,
+  } : mockChartData;
 
   const severityColors = {
     low: 'bg-green-100 text-green-800',
@@ -78,16 +118,44 @@ export default function AnalyticsPage() {
     fire: 'bg-orange-100 text-orange-800',
     police: 'bg-blue-100 text-blue-800',
     accident: 'bg-yellow-100 text-yellow-800',
-    natural_disaster: 'bg-purple-100 text-purple-800',
+    mental_health: 'bg-purple-100 text-purple-800',
     other: 'bg-gray-100 text-gray-800',
+  };
+
+  // Handle missing type colors gracefully
+  const getTypeColor = (type: string) => {
+    return typeColors[type as keyof typeof typeColors] || 'bg-gray-100 text-gray-800';
   };
 
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-dark dark:text-light">Analytics Dashboard</h1>
+            <div className="flex items-center gap-2">
+              <Badge className={analytics ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                {analytics ? "Live Data" : "Mock Data"}
+              </Badge>
+              <Badge className={connectionStatus ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}>
+                {connectionStatus ? <Wifi className="h-3 w-3 mr-1" /> : <WifiOff className="h-3 w-3 mr-1" />}
+                {connectionStatus ? "Real-time" : "Offline"}
+              </Badge>
+              {lastUpdated && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex gap-2">
             {['24h', '7d', '30d', '90d'].map((period) => (
               <button
@@ -102,6 +170,13 @@ export default function AnalyticsPage() {
                 {period === '24h' ? '24 Hours' : period === '7d' ? '7 Days' : period === '30d' ? '30 Days' : '90 Days'}
               </button>
             ))}
+            <button
+              onClick={refresh}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg font-medium transition-colors bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
@@ -115,9 +190,11 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.totalCalls}</div>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                +12% from last period
+              <div className="text-3xl font-bold text-dark dark:text-light">
+                {loading ? '...' : currentAnalytics.totalCalls}
+              </div>
+              <CardDescription className="text-dark-secondary dark:text-light-secondary">
+                {analytics ? 'Real-time data' : 'Sample data'}
               </CardDescription>
             </CardContent>
           </Card>
@@ -130,9 +207,11 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.activeCalls}</div>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                Currently in progress
+              <div className="text-3xl font-bold text-dark dark:text-light">
+                {loading ? '...' : currentAnalytics.pendingCalls}
+              </div>
+              <CardDescription className="text-dark-secondary dark:text-light-secondary">
+                {analytics ? 'Currently pending' : 'Sample data'}
               </CardDescription>
             </CardContent>
           </Card>
@@ -145,9 +224,11 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.averageResponseTime} min</div>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                -0.3 from average
+              <div className="text-3xl font-bold text-dark dark:text-light">
+                {loading ? '...' : currentAnalytics.averageResponseTime?.toFixed(1)} min
+              </div>
+              <CardDescription className="text-dark-secondary dark:text-light-secondary">
+                {analytics ? 'Real-time average' : 'Sample data'}
               </CardDescription>
             </CardContent>
           </Card>
@@ -156,13 +237,15 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-red-600 dark:text-red-300 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
-                Critical Cases
+                Resolved Cases
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.callsBySeverity.critical}</div>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                Requires immediate attention
+              <div className="text-3xl font-bold text-dark dark:text-light">
+                {loading ? '...' : currentAnalytics.resolvedCalls}
+              </div>
+              <CardDescription className="text-dark-secondary dark:text-light-secondary">
+                {analytics ? 'Successfully handled' : 'Sample data'}
               </CardDescription>
             </CardContent>
           </Card>
@@ -173,23 +256,23 @@ export default function AnalyticsPage() {
           {/* Calls by Type */}
           <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-gray-100">Calls by Emergency Type</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">Distribution of emergency calls by type</CardDescription>
+              <CardTitle className="text-white">Calls by Emergency Type</CardTitle>
+              <CardDescription className="text-dark-secondary dark:text-light-secondary">Distribution of emergency calls by type</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(analytics.callsByType).map(([type, count]) => (
+                {Object.entries(currentAnalytics.callsByType).map(([type, count]) => (
                   <div key={type} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge className={`${typeColors[type as keyof typeof typeColors]} px-3 py-1 text-xs font-semibold`}>
-                        {type.replace('_', ' ').toUpperCase()}
+                      <Badge className={`${getTypeColor(type)} px-3 py-1 text-xs font-semibold`}>
+                        {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div 
                           className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${(count / analytics.totalCalls) * 100}%` }}
+                          style={{ width: `${(count / currentAnalytics.totalCalls) * 100}%` }}
                         />
                       </div>
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100 w-8 text-right">
@@ -205,12 +288,12 @@ export default function AnalyticsPage() {
           {/* Calls by Severity */}
           <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-gray-100">Calls by Severity</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">Distribution of emergency calls by severity level</CardDescription>
+              <CardTitle className="text-white">Calls by Severity</CardTitle>
+              <CardDescription className="text-dark-secondary dark:text-light-secondary">Distribution of emergency calls by severity level</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(analytics.callsBySeverity).map(([severity, count]) => (
+                {Object.entries(currentAnalytics.callsBySeverity).map(([severity, count]) => (
                   <div key={severity} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Badge className={`${severityColors[severity as keyof typeof severityColors]} px-3 py-1 text-xs font-semibold`}>
@@ -221,7 +304,7 @@ export default function AnalyticsPage() {
                       <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div 
                           className="bg-green-600 h-2 rounded-full"
-                          style={{ width: `${(count / analytics.totalCalls) * 100}%` }}
+                          style={{ width: `${(count / currentAnalytics.totalCalls) * 100}%` }}
                         />
                       </div>
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100 w-8 text-right">
@@ -238,24 +321,24 @@ export default function AnalyticsPage() {
         {/* Hourly Distribution */}
         <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-gray-100">Hourly Call Distribution</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">Number of calls by hour of day</CardDescription>
+            <CardTitle className="text-white">Hourly Call Distribution</CardTitle>
+            <CardDescription className="text-dark-secondary dark:text-light-secondary">Number of calls by hour of day</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-64 flex items-end justify-between gap-1">
-              {analytics.callsByHour.map((hour) => (
+              {chartData.callsByHour.map((hour: any, index: number) => (
                 <div
                   key={hour.hour}
                   className="flex-1 bg-blue-600 rounded-t hover:bg-blue-700 transition-all duration-300 ease-out relative group cursor-pointer transform hover:scale-y-105"
-                  style={{ height: `${(hour.calls / 20) * 100}%` }}
+                  style={{ height: `${hour.calls > 0 ? (hour.calls / Math.max(...chartData.callsByHour.map((h: any) => h.calls), 1)) * 100 : 2}%` }}
                 >
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                     {hour.hour}:00 - {hour.calls} calls
                   </div>
                 </div>
               ))}
             </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between mt-2 text-xs text-dark-secondary dark:text-light-secondary">
               <span>00:00</span>
               <span>06:00</span>
               <span>12:00</span>
@@ -268,25 +351,25 @@ export default function AnalyticsPage() {
         {/* Weekly Distribution */}
         <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-gray-100">Weekly Call Distribution</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">Number of calls by day of week</CardDescription>
+            <CardTitle className="text-white">Weekly Call Distribution</CardTitle>
+            <CardDescription className="text-dark-secondary dark:text-light-secondary">Number of calls by day of week</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-48 flex items-end justify-between gap-2">
-              {analytics.callsByDay.map((day) => (
+              {chartData.callsByDay.map((day: any, index: number) => (
                 <div
                   key={day.day}
                   className="flex-1 flex flex-col items-center gap-2"
                 >
                   <div
                     className="w-full bg-green-600 rounded-t hover:bg-green-700 transition-all duration-300 ease-out relative group cursor-pointer transform hover:scale-y-105"
-                    style={{ height: `${(day.calls / 35) * 100}%` }}
+                    style={{ height: `${day.calls > 0 ? (day.calls / Math.max(...chartData.callsByDay.map((d: any) => d.calls), 1)) * 100 : 2}%` }}
                   >
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {day.day} - {day.calls} calls
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                  <span className="text-xs text-dark-secondary dark:text-light-secondary font-medium">
                     {day.day}
                   </span>
                 </div>

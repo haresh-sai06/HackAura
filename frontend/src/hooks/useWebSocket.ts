@@ -30,6 +30,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     onNotification,
     onUserStatus,
     onSystemUpdate,
+    onAnalyticsUpdate,
+    onStatsUpdate,
     removeAllListeners,
   } = useWebSocketService();
 
@@ -46,12 +48,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       message: `${call.callerName} - ${call.emergencyType}`,
       timestamp: new Date(),
       read: false,
-      callId: call.id,
+      callId: String(call.id),
     });
   }, [addCall, addNotification]);
 
   const handleCallUpdate = useCallback((call: EmergencyCall) => {
-    updateCall(call.id, call);
+    updateCall(String(call.id), call);
     addNotification({
       id: `update-${call.id}-${Date.now()}`,
       type: 'call_updated' as any,
@@ -59,7 +61,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       message: `Call ${call.id} status changed to ${call.status}`,
       timestamp: new Date(),
       read: false,
-      callId: call.id,
+      callId: String(call.id),
     });
   }, [updateCall, addNotification]);
 
@@ -97,6 +99,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       onNotification(handleNotification);
       onUserStatus(handleUserStatus);
       onSystemUpdate(handleSystemUpdate);
+      onAnalyticsUpdate((data) => {
+        console.log('Analytics update received:', data);
+        // Handle analytics updates - could trigger store update
+      });
+      onStatsUpdate((data) => {
+        console.log('Stats update received:', data);
+        // Handle stats updates - could trigger store update
+      });
 
       console.log('WebSocket connected successfully');
     } catch (error) {
@@ -121,6 +131,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     onNotification,
     onUserStatus,
     onSystemUpdate,
+    onAnalyticsUpdate,
+    onStatsUpdate,
     handleNewCall,
     handleCallUpdate,
     handleNotification,

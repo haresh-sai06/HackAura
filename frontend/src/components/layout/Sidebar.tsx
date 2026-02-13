@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   Phone, 
   BarChart3, 
@@ -10,16 +10,17 @@ import {
   Bell, 
   LogOut,
   Menu,
-  X
+  X,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useNavigationData } from '@/hooks/useNavigationData';
 
 interface SidebarProps {
   className?: string;
-  isCollapsed?: boolean;
-  onToggle?: () => void;
 }
 
 const navigation = [
@@ -32,7 +33,7 @@ const navigation = [
     name: 'Emergency Calls',
     href: '/calls',
     icon: Phone,
-    badge: 3, // Number of active calls
+    badgeKey: 'activeCalls', // Dynamic badge key
   },
   {
     name: 'Analytics',
@@ -48,7 +49,7 @@ const navigation = [
     name: 'Notifications',
     href: '/notifications',
     icon: Bell,
-    badge: 5, // Number of unread notifications
+    badgeKey: 'notifications', // Dynamic badge key
   },
   {
     name: 'Settings',
@@ -57,9 +58,13 @@ const navigation = [
   },
 ];
 
-export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarProps) {
+export function Sidebar({ className }: SidebarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  
+  // Get real-time navigation data
+  const { activeCallsCount, unreadNotificationsCount, loading, isConnected } = useNavigationData();
 
   // Function to check if a route is active
   const isActive = (href: string) => {
@@ -69,129 +74,188 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
   const NavItem = ({ item }: { item: typeof navigation[0] }) => {
     const Icon = item.icon;
     const active = isActive(item.href);
+    const [isHovered, setIsHovered] = useState(false);
+    
+    // Get badge value based on badgeKey
+    const getBadgeValue = () => {
+      if (item.badgeKey === 'activeCalls') {
+        return activeCallsCount;
+      } else if (item.badgeKey === 'notifications') {
+        return unreadNotificationsCount;
+      }
+      return undefined;
+    };
+    
+    const badgeValue = getBadgeValue();
+    
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      router.push(item.href);
+      setMobileMenuOpen(false); // Close mobile menu after navigation
+    };
     
     return (
-      <a
-        href={item.href}
-        className={cn(
-          // Base styles with professional dark theme
-          'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out hover:translate-x-1',
-          // Dark theme colors
-          'text-slate-200 hover:bg-slate-800',
-          // Active state - DYNAMIC ROUTE DETECTION
-          active
-            ? 'bg-blue-600 text-white shadow-lg'
-            : 'text-slate-400',
-          // Collapsed state
-          isCollapsed && 'justify-center'
-        )}
+      <div
+        className="relative"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <Icon className={cn(
-          'h-4 w-4 transition-colors',
-          active ? 'text-white' : 'text-slate-400'
-        )} />
-        {!isCollapsed && (
-          <>
-            <span className="flex-1">{item.name}</span>
-            {item.badge && (
-              <Badge variant="secondary" className="h-5 w-5 rounded-full p-0 text-xs bg-blue-500 text-white">
-                {item.badge}
+        <a
+          href={item.href}
+          onClick={handleClick}
+          className={cn(
+            // Enhanced base styles with professional dark theme
+            'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-300 ease-out relative overflow-hidden',
+            // Improved hover effects with scale and glow
+            'transform hover:scale-[1.02] hover:shadow-lg',
+            // Dark theme colors with glass effect
+            'text-slate-300/90 hover:bg-slate-700/60 hover:text-slate-100',
+            // Active state with enhanced styling
+            active
+              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl border border-blue-500/40 scale-[1.02]'
+              : 'text-slate-400/80 hover:text-slate-200',
+            // Subtle background animation on hover
+            isHovered && !active && 'before:absolute before:inset-0 before:bg-gradient-to-r before:from-blue-500/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100'
+          )}
+        >
+          {/* Hover glow effect */}
+          {isHovered && !active && (
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-lg animate-pulse" />
+          )}
+          
+          <Icon className={cn(
+            'h-4 w-4 transition-all duration-300 flex-shrink-0 relative z-10',
+            active 
+              ? 'text-white scale-110 drop-shadow-sm' 
+              : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105 group-hover:drop-shadow-sm',
+            isHovered && !active && 'animate-pulse'
+          )} />
+          
+          <div className="flex-1 flex items-center justify-between relative z-10">
+            <span className="font-medium truncate">{item.name}</span>
+            {badgeValue !== undefined && badgeValue > 0 && (
+              <Badge 
+                variant="secondary" 
+                className={cn(
+                  'inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-semibold rounded-full flex-shrink-0 shadow-md transition-all duration-300',
+                  'bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse',
+                  isHovered && 'scale-110 shadow-lg'
+                )}
+              >
+                {loading ? '...' : badgeValue}
               </Badge>
             )}
-          </>
-        )}
-      </a>
+          </div>
+          
+          {/* Active state indicator */}
+          {active && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-lg" />
+          )}
+        </a>
+      </div>
     );
   };
 
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Mobile menu button - always visible on mobile, hidden on desktop */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           variant="outline"
           size="icon"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700"
         >
           {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </Button>
       </div>
 
+
+      {/* Mobile overlay - closes sidebar when clicked */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <div
         className={cn(
-          // Professional dark theme background
-          'fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-700 transition-transform duration-300 ease-in-out lg:translate-x-0',
-          isCollapsed && 'w-16',
+          // Enhanced professional dark theme background
+          'fixed inset-y-0 left-0 z-40 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 transition-all duration-300 ease-in-out lg:translate-x-0 shadow-2xl',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           className
         )}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex h-16 items-center gap-3 border-b border-slate-700 px-4">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg">
+          <div className="flex h-16 items-center gap-3 border-b border-slate-700/50 px-4 min-w-0 bg-slate-800/50">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg flex-shrink-0 transition-transform hover:scale-105">
                 <Phone className="h-4 w-4 text-white" />
               </div>
-              {!isCollapsed && (
-                <span className="text-lg font-semibold tracking-wide text-slate-200">HackAura</span>
-              )}
+              <span className="text-lg font-semibold tracking-wide text-slate-100 truncate min-w-0">HackAura</span>
             </div>
-            {!isCollapsed && onToggle && (
+            
+            {/* Mobile close button - always visible on mobile */}
+            <div className="lg:hidden ml-auto">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onToggle}
-                className="ml-auto text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-slate-400 hover:text-slate-100 hover:bg-slate-700/50 transition-colors-smooth"
               >
-                <Menu className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </Button>
-            )}
+            </div>
+            
+            
+            {/* Desktop connection status - always visible */}
+            <div className="hidden lg:flex items-center gap-2 ml-2 min-w-0">
+              <div className="flex items-center gap-1 min-w-0">
+                {isConnected ? (
+                  <Wifi className="h-3 w-3 text-green-400 flex-shrink-0" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-red-400 flex-shrink-0" />
+                )}
+                <span className="text-xs text-slate-400 truncate min-w-0">
+                  {isConnected ? 'Live' : 'Offline'}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-2 p-4">
+          <nav className="flex-1 space-y-1 p-4">
             {navigation.map((item) => (
               <NavItem key={item.name} item={item} />
             ))}
           </nav>
 
           {/* User section */}
-          <div className="border-t border-slate-700 p-4">
+          <div className="border-t border-slate-700/50 p-4 bg-slate-800/30">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center shadow-md">
                 <Users className="h-4 w-4 text-slate-300" />
               </div>
-              {!isCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate text-slate-200">John Doe</p>
-                  <p className="text-xs text-slate-400 truncate">Dispatcher</p>
-                </div>
-              )}
-            </div>
-            {!isCollapsed && (
-              <div className="mt-3 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                  <span className="text-xs text-slate-400">1 Issue</span>
-                </div>
-                <Button variant="ghost" size="icon" className="w-full text-slate-400 hover:text-slate-200 hover:bg-slate-800">
-                  <LogOut className="h-4 w-4" />
-                </Button>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate text-slate-100">John Doe</p>
+                <p className="text-xs text-slate-400 truncate">Dispatcher</p>
               </div>
-            )}
+            </div>
+            <div className="mt-3 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
+                <span className="text-xs text-slate-400">1 Issue</span>
+              </div>
+              <Button variant="ghost" size="icon" className="w-full text-slate-400 hover:text-slate-100 hover:bg-slate-700/50 transition-colors-smooth">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Mobile overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
     </>
   );
 }

@@ -32,10 +32,10 @@ export function CallList({
 
   const filteredCalls = calls.filter(call => {
     const matchesSearch = 
-      call.callerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      call.phoneNumber.includes(searchTerm) ||
-      call.location.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      call.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (call.callerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (call.phoneNumber || call.from_number || '').includes(searchTerm) ||
+      (call.location?.address || call.location_address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (call.description || call.transcript || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || call.status === statusFilter;
     const matchesSeverity = severityFilter === 'all' || call.severity === severityFilter;
@@ -49,20 +49,21 @@ export function CallList({
   ).length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-900">Emergency Calls</h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            <span className="font-semibold text-slate-900">{activeCallsCount}</span> active calls • 
-            <span className="font-semibold text-slate-900">{calls.length}</span> total
+      <div className="flex items-center justify-between mb-8">
+        <div className="animate-fade-in">
+          <h2 className="text-3xl font-bold text-dark dark:text-light mb-2">Emergency Calls</h2>
+          <p className="text-dark-secondary dark:text-light-secondary">
+            <span className="font-semibold text-blue-600 dark:text-blue-400">{activeCallsCount}</span> active calls • 
+            <span className="font-semibold text-dark dark:text-light">{calls.length}</span> total
           </p>
         </div>
         <Button 
           onClick={onRefresh} 
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 h-10"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6 h-11 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-fade-in"
+          style={{ animationDelay: '0.1s' }}
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           {loading ? 'Refreshing...' : 'Refresh'}
@@ -70,27 +71,27 @@ export function CallList({
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-6 relative">
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">Filters</h2>
+      <div className="filters-card glass-effect p-6 rounded-2xl mb-8 relative animate-slide-in" style={{ animationDelay: '0.2s' }}>
+        <h2 className="text-lg font-semibold text-dark dark:text-light mb-6">Filters</h2>
         
         {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+        <div className="relative mb-6">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
           <Input
             placeholder="Search calls by name, phone, location, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white text-black placeholder:text-gray-500 border border-gray-300 rounded-lg py-3 pl-10 pr-4 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full bg-white/80 dark:bg-slate-800/80 text-black dark:text-white placeholder:text-white border border-gray-300 dark:border-slate-600 rounded-xl py-3 pl-12 pr-4 shadow-sm focus:ring-2 focus:ring-blue-500/50 focus:outline-none focus:border-blue-400 transition-all duration-200"
           />
         </div>
 
         {/* Filter dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative z-10">
           <Select value={statusFilter} onValueChange={(value: string) => setStatusFilter(value as CallStatus | 'all')}>
-            <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
+            <SelectTrigger className="w-full bg-white/80 dark:bg-slate-800/80 border border-gray-300 dark:border-slate-600 rounded-xl px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-all duration-200">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-lg z-50 mt-2">
+            <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shadow-xl border border-gray-200 dark:border-slate-600 rounded-xl z-50 mt-2">
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value={CallStatus.PENDING}>Pending</SelectItem>
               <SelectItem value={CallStatus.IN_PROGRESS}>In Progress</SelectItem>
@@ -101,10 +102,10 @@ export function CallList({
           </Select>
 
           <Select value={severityFilter} onValueChange={(value: string) => setSeverityFilter(value as Severity | 'all')}>
-            <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
+            <SelectTrigger className="w-full bg-white/80 dark:bg-slate-800/80 border border-gray-300 dark:border-slate-600 rounded-xl px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-all duration-200">
               <SelectValue placeholder="Filter by severity" />
             </SelectTrigger>
-            <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-lg z-50 mt-2">
+            <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shadow-xl border border-gray-200 dark:border-slate-600 rounded-xl z-50 mt-2">
               <SelectItem value="all">All Severities</SelectItem>
               <SelectItem value={Severity.LOW}>Low</SelectItem>
               <SelectItem value={Severity.MEDIUM}>Medium</SelectItem>
@@ -114,10 +115,10 @@ export function CallList({
           </Select>
 
           <Select value={typeFilter} onValueChange={(value: string) => setTypeFilter(value as EmergencyType | 'all')}>
-            <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
+            <SelectTrigger className="w-full bg-white/80 dark:bg-slate-800/80 border border-gray-300 dark:border-slate-600 rounded-xl px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-all duration-200">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
-            <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-lg z-50 mt-2">
+            <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shadow-xl border border-gray-200 dark:border-slate-600 rounded-xl z-50 mt-2">
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value={EmergencyType.MEDICAL}>Medical</SelectItem>
               <SelectItem value={EmergencyType.FIRE}>Fire</SelectItem>
@@ -131,8 +132,8 @@ export function CallList({
 
         {/* Active filters */}
         {(statusFilter !== 'all' || severityFilter !== 'all' || typeFilter !== 'all' || searchTerm) && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
-            <span className="text-sm font-medium text-white">Active filters:</span>
+          <div className="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/50 dark:to-blue-800/50 rounded-xl border border-blue-200 dark:border-blue-700 animate-slide-in">
+            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Active filters:</span>
             {statusFilter !== 'all' && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-600">
                 Status: {statusFilter}
@@ -162,7 +163,7 @@ export function CallList({
                 setSeverityFilter('all');
                 setTypeFilter('all');
               }}
-              className="text-white hover:text-gray-200 dark:text-white dark:hover:text-gray-200"
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 hover:bg-blue-200/50 dark:hover:bg-blue-700/50 transition-colors-smooth"
             >
               Clear all
             </Button>
@@ -171,30 +172,32 @@ export function CallList({
       </div>
 
       {/* Visual Divider */}
-      <div className="border-t border-gray-200 my-6"></div>
+      <div className="border-t border-gray-200 dark:border-slate-700 my-8"></div>
 
       {/* Call list */}
-      <div className="space-y-4">
+      <div className="space-y-4 animate-slide-in" style={{ animationDelay: '0.3s' }}>
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground mt-2">Loading calls...</p>
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-muted-foreground text-lg">Loading calls...</p>
           </div>
         ) : filteredCalls.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📞</div>
+            <p className="text-muted-foreground text-lg">
               {calls.length === 0 ? 'No emergency calls yet' : 'No calls match your filters'}
             </p>
           </div>
         ) : (
-          <div className="grid gap-3">
-            {filteredCalls.map((call) => (
-              <CallCard
-                key={call.id}
-                call={call}
-                onSelect={onSelectCall}
-                onAssign={onAssignCall}
-              />
+          <div className="grid gap-4">
+            {filteredCalls.map((call, index) => (
+              <div key={call.id} className="animate-slide-in" style={{ animationDelay: `${0.4 + index * 0.05}s` }}>
+                <CallCard
+                  call={call}
+                  onSelect={onSelectCall}
+                  onAssign={onAssignCall}
+                />
+              </div>
             ))}
           </div>
         )}

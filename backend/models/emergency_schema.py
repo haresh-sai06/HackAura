@@ -5,27 +5,27 @@ from enum import Enum
 
 
 class EmergencyType(str, Enum):
-    MEDICAL = "medical"
-    FIRE = "fire"
-    POLICE = "police"
-    ACCIDENT = "accident"
-    MENTAL_HEALTH = "mental_health"
-    OTHER = "other"
+    MEDICAL = "MEDICAL"
+    FIRE = "FIRE"
+    POLICE = "POLICE"
+    ACCIDENT = "ACCIDENT"
+    MENTAL_HEALTH = "MENTAL_HEALTH"
+    OTHER = "OTHER"
 
 
 class SeverityLevel(str, Enum):
-    LEVEL_1 = "Level 1"  # Critical
-    LEVEL_2 = "Level 2"  # High
-    LEVEL_3 = "Level 3"  # Moderate
-    LEVEL_4 = "Level 4"  # Low
+    LEVEL_1 = "LEVEL_1"  # Critical
+    LEVEL_2 = "LEVEL_2"  # High
+    LEVEL_3 = "LEVEL_3"  # Moderate
+    LEVEL_4 = "LEVEL_4"  # Low
 
 
 class EmergencyService(str, Enum):
-    AMBULANCE = "Ambulance"
-    FIRE_DEPARTMENT = "Fire Department"
-    POLICE = "Police"
-    CRISIS_RESPONSE = "Crisis Response"
-    MULTIPLE = "Multiple Services"
+    AMBULANCE = "AMBULANCE"
+    FIRE_DEPARTMENT = "FIRE_DEPARTMENT"
+    POLICE = "POLICE"
+    CRISIS_RESPONSE = "CRISIS_RESPONSE"
+    MULTIPLE = "MULTIPLE_SERVICES"
 
 
 class ClassificationResult(BaseModel):

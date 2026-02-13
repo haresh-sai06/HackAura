@@ -53,6 +53,14 @@ class Settings:
         self.LOG_RESPONSES = os.getenv("LOG_RESPONSES", "true").lower() == "true"
         self.LOG_TRIAGE_STEPS = os.getenv("LOG_TRIAGE_STEPS", "true").lower() == "true"
         
+        # Database Configuration
+        self.DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./hackaura.db")
+        self.DEBUG = self.DEBUG_MODE
+        
+        # WebSocket Configuration
+        self.WEBSOCKET_ENABLED = os.getenv("WEBSOCKET_ENABLED", "true").lower() == "true"
+        self.WEBSOCKET_CORS_ALLOWED_ORIGINS = os.getenv("WEBSOCKET_CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+        
         # Print debug settings on startup
         if self.DEBUG_MODE:
             print("🐛 DEBUG MODE ENABLED")
@@ -60,6 +68,8 @@ class Settings:
             print(f"📝 Log Requests: {self.LOG_REQUESTS}")
             print(f"📤 Log Responses: {self.LOG_RESPONSES}")
             print(f"🎯 Log Triage Steps: {self.LOG_TRIAGE_STEPS}")
+            print(f"💾 Database: {self.DATABASE_URL}")
+            print(f"🔌 WebSocket: {'Enabled' if self.WEBSOCKET_ENABLED else 'Disabled'}")
             print("=" * 50)
 
 

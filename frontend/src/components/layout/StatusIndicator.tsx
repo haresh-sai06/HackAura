@@ -67,30 +67,37 @@ export function StatusIndicator({ className, calls = [] }: StatusIndicatorProps)
   ];
 
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 ${className}`}>
-      {stats.map((stat) => {
+    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 ${className}`}>
+      {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={stat.title} className={`p-6 ${stat.bgColor} ${stat.borderColor} border shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
-            {/* Subtle pattern overlay */}
-            <div className="absolute inset-0 bg-white dark:bg-black opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <Card 
+            key={stat.title} 
+            className={`p-6 ${stat.bgColor} ${stat.borderColor} border shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group animate-slide-in`}
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            {/* Enhanced pattern overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-black/10 group-hover:from-white/20 dark:group-hover:from-black/20 transition-all duration-300"></div>
+            
+            {/* Decorative corner accent */}
+            <div className={`absolute top-0 right-0 w-16 h-16 ${stat.iconBg} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
             
             <div className="flex items-start justify-between relative z-10">
               <div className="flex-1">
                 <p className={`text-sm font-semibold ${stat.color} uppercase tracking-wide mb-2`}>
                   {stat.title}
                 </p>
-                <p className={`text-3xl font-bold ${stat.color === 'text-red-600 dark:text-red-300' ? 'text-red-700 dark:text-red-200' : stat.color} mb-1`}>
+                <p className={`text-3xl font-bold ${stat.color === 'text-red-600 dark:text-red-300' ? 'text-red-700 dark:text-red-200' : stat.color} mb-2`}>
                   {stat.value}
                 </p>
                 <div className="flex items-center gap-2">
-                  <div className={`h-1 w-8 ${stat.iconBg} rounded-full`}></div>
-                  <p className={`text-xs ${stat.color} font-medium`}>
+                  <div className={`h-1.5 w-10 ${stat.iconBg} rounded-full shadow-sm`}></div>
+                  <p className={`text-xs ${stat.color} font-medium opacity-80`}>
                     {stat.change}
                   </p>
                 </div>
               </div>
-              <div className={`p-4 rounded-2xl ${stat.iconBg} shadow-lg transform transition-all duration-300 ease-out group-hover:scale-110 group-hover:rotate-3`}>
+              <div className={`p-4 rounded-2xl ${stat.iconBg} shadow-lg transform transition-all duration-300 ease-out group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-xl`}>
                 <Icon className="h-6 w-6 text-white transition-transform duration-300" />
               </div>
             </div>

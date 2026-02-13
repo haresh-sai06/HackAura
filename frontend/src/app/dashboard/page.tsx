@@ -3,10 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BarChart3, Phone, Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Navigation } from '@/components/layout/Navigation';
 import { OverviewSection } from '@/components/dashboard/OverviewSection';
-import { CallsSection } from '@/components/dashboard/CallsSection';
-import { AnalyticsSection } from '@/components/dashboard/AnalyticsSection';
 import { ClientOnly } from '@/components/ui/client-only';
 import { useEmergencyStore } from '@/store/emergencyStore';
 import { EmergencyCall, CallAnalytics as CallAnalyticsType, CallStatus, EmergencyType, Severity } from '@/types/emergency';
@@ -14,7 +11,6 @@ import { emergencyApi } from '@/utils/api';
 import { useWebSocket } from '@/utils/websocket';
 
 export default function Dashboard() {
-  const [selectedView, setSelectedView] = useState<'overview' | 'calls' | 'analytics'>('overview');
   const [analytics, setAnalytics] = useState<CallAnalyticsType | null>(null);
   
   const {
@@ -30,33 +26,7 @@ export default function Dashboard() {
 
   const { connect, disconnect, onNewCall, onCallUpdate } = useWebSocket();
 
-  // Navigation items
-  const navigationItems = [
-    {
-      id: 'overview' as const,
-      name: 'Overview',
-      href: '/dashboard',
-      icon: BarChart3,
-      current: selectedView === 'overview',
-    },
-    {
-      id: 'calls' as const,
-      name: 'Emergency Calls',
-      href: '/calls',
-      icon: Phone,
-      current: selectedView === 'calls',
-      badge: calls.filter(call => 
-        call.status === CallStatus.PENDING || call.status === CallStatus.IN_PROGRESS
-      ).length,
-    },
-    {
-      id: 'analytics' as const,
-      name: 'Analytics',
-      href: '/analytics',
-      icon: BarChart3,
-      current: selectedView === 'analytics',
-    },
-  ];
+  // Removed selectedView state since we only show overview now
 
   useEffect(() => {
     const fetchData = async () => {
@@ -162,7 +132,7 @@ export default function Dashboard() {
       });
       
       onCallUpdate((call: EmergencyCall) => {
-        updateCall(call.id, call);
+        updateCall(String(call.id), call);
       });
     }
 
@@ -173,7 +143,6 @@ export default function Dashboard() {
 
   const handleSelectCall = (call: EmergencyCall) => {
     setSelectedCall(call);
-    setSelectedView('calls');
   };
 
   const handleAssignCall = async (callId: string) => {
@@ -298,46 +267,23 @@ export default function Dashboard() {
   };
 
   const renderMainContent = () => {
-    switch (selectedView) {
-      case 'overview':
-        return (
-          <OverviewSection
-            calls={calls}
-            onSelectCall={handleSelectCall}
-            onAssignCall={handleAssignCall}
-            onRefresh={handleRefresh}
-          />
-        );
-      
-      case 'calls':
-        return (
-          <CallsSection
-            calls={calls}
-            selectedCall={selectedCall}
-            onSelectCall={setSelectedCall}
-            onAssignCall={handleAssignCall}
-            onRefresh={handleRefresh}
-            onUpdateCall={updateCall}
-          />
-        );
-      
-      case 'analytics':
-        return <AnalyticsSection analytics={analytics} />;
-      
-      default:
-        return null;
-    }
+    return (
+      <OverviewSection
+        calls={calls}
+        onSelectCall={handleSelectCall}
+        onAssignCall={handleAssignCall}
+        onRefresh={handleRefresh}
+      />
+    );
   };
 
   return (
     <ClientOnly fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
       <DashboardLayout>
-        {/* Navigation */}
-        <Navigation
-          items={navigationItems}
-          currentView={selectedView}
-          onViewChange={(view: 'overview' | 'calls' | 'analytics') => setSelectedView(view)}
-        />
+        {/* Navigation - simplified */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard Overview</h1>
+        </div>
 
         {/* Main Content */}
         {renderMainContent()}

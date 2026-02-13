@@ -152,7 +152,7 @@ export default function TeamPage() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Team Management</h1>
+          <h1 className="text-3xl font-bold text-black">Team Management</h1>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
             Add Team Member
           </Button>

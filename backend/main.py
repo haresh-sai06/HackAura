@@ -2,8 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
+from datetime import datetime
 from config import settings
 from routes.voice import router as voice_router
+from routes.calls import router as calls_router
+from routes.analytics import router as analytics_router
+from services.websocket_service import websocket_service
+import socketio
 
 # Configure logging with simplified output
 logging.basicConfig(
@@ -32,6 +37,17 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Create Socket.IO app
+sio = socketio.AsyncServer(
+    cors_allowed_origins=settings.WEBSOCKET_CORS_ALLOWED_ORIGINS,
+    async_mode='asgi',
+    logger=settings.DEBUG,
+    engineio_logger=settings.DEBUG
+)
+
+# Wrap FastAPI app with Socket.IO
+socket_app = socketio.ASGIApp(sio, app)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -43,6 +59,32 @@ app.add_middleware(
 
 # Include routers
 app.include_router(voice_router, prefix="/api", tags=["voice"])
+app.include_router(calls_router, prefix="/api", tags=["calls"])
+app.include_router(analytics_router, prefix="/api", tags=["analytics"])
+
+# Set up Socket.IO event handlers
+@sio.event
+async def connect(sid, environ):
+    print(f"WebSocket client connected: {sid}")
+    await sio.emit('connected', {'message': 'Connected to HackAura WebSocket'}, room=sid)
+
+@sio.event
+async def disconnect(sid):
+    print(f"WebSocket client disconnected: {sid}")
+
+@sio.event
+async def subscribe_analytics(sid, data):
+    print(f"Client {sid} subscribed to analytics updates")
+    await sio.emit('subscribed', {'type': 'analytics'}, room=sid)
+
+@sio.event
+async def subscribe_calls(sid, data):
+    print(f"Client {sid} subscribed to call updates")
+    await sio.emit('subscribed', {'type': 'calls'}, room=sid)
+
+@sio.event
+async def ping(sid, data):
+    await sio.emit('pong', {'timestamp': datetime.utcnow().isoformat()}, room=sid)
 
 @app.get("/")
 async def root():
@@ -52,10 +94,20 @@ async def root():
         "status": "active",
         "system": "Real-Time AI for Priority Incident Dispatch",
         "version": "2.0.0",
+        "features": {
+            "voice_processing": True,
+            "real_time_database": True,
+            "websocket_support": websocket_service.sio is not None,
+            "api_endpoints": True
+        },
         "endpoints": {
             "emergency_webhook": "/api/voice",
             "process_emergency": "/api/voice/process",
-            "call_status": "/api/voice/status"
+            "call_status": "/api/voice/status",
+            "calls_management": "/api/calls",
+            "analytics": "/api/analytics",
+            "websocket": "/socket.io",
+            "health_check": "/health"
         }
     }
 
@@ -74,7 +126,7 @@ if __name__ == "__main__":
     logger.info(f"Server will run on http://{settings.HOST}:{settings.PORT}")
     
     uvicorn.run(
-        "main:app",
+        "main:socket_app",  # Use the socket_app instead of app
         host=settings.HOST,
         port=settings.PORT,
         reload=True,

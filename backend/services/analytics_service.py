@@ -1,8 +1,8 @@
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import logging
-from backend.app.models.analytics import CallAnalytics
-from backend.config import settings
+from app.models.analytics import CallAnalytics
+from config import settings
 
 logger = logging.getLogger(__name__)
 

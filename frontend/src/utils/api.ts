@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 3000, // Reduced timeout for faster fallback to mock data
+  timeout: 10000, // Increased timeout to 10 seconds
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,6 +13,7 @@ export const api = axios.create({
 
 // Request interceptor for auth token
 api.interceptors.request.use((config) => {
+  console.log('API Request:', config.method?.toUpperCase(), config.url);
   const token = localStorage.getItem('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -22,8 +23,12 @@ api.interceptors.request.use((config) => {
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.config.url, response.status, response.data);
+    return response;
+  },
   (error) => {
+    console.error('API Error:', error.config?.url, error.response?.status, error.message);
     if (error.response?.status === 401) {
       // Handle unauthorized access
       localStorage.removeItem('auth_token');
@@ -81,7 +86,7 @@ export const emergencyApi = {
 
   // Analytics
   getAnalytics: async (): Promise<CallAnalytics> => {
-    const response = await api.get('/api/analytics');
+    const response = await api.get('/api/analytics');  // Use the comprehensive analytics endpoint
     return response.data;
   },
 

@@ -5,7 +5,10 @@ import logging
 import asyncio
 from services import twilio_service
 from services.triage_engine import triage_engine
+from services.database_service import database_service
+from services.websocket_service import websocket_service
 from config import settings
+from models.database import CallStatus
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -82,6 +85,42 @@ async def process_emergency_input(
         
         # Run triage pipeline
         triage_result = await triage_engine.process(transcript)
+        
+        # Store call record in database
+        try:
+            call_data = {
+                'call_sid': call_sid,
+                'from_number': form_data.get('From', ''),
+                'to_number': form_data.get('To', ''),
+                'transcript': transcript,
+                'emergency_type': triage_result.emergency_type,
+                'severity_level': triage_result.severity_level,
+                'severity_score': triage_result.severity_score,
+                'location_address': triage_result.location,
+                'confidence': triage_result.confidence,
+                'risk_indicators': triage_result.risk_indicators,
+                'assigned_service': triage_result.assigned_service,
+                'priority': triage_result.priority,
+                'summary': triage_result.summary,
+                'status': CallStatus.PENDING,
+                'processing_time_ms': triage_result.processing_time_ms,
+                'metadata': {
+                    'twilio_form_data': dict(form_data),
+                    'speech_result': SpeechResult,
+                    'unstable_speech_result': UnstableSpeechResult
+                }
+            }
+            
+            call_record = database_service.create_call_record(call_data)
+            logger.info(f"📞 Stored call record: {call_record.id}")
+            
+            # Broadcast new call to WebSocket clients
+            if websocket_service.sio:
+                await websocket_service.broadcast_new_call(call_record)
+            
+        except Exception as db_error:
+            logger.error(f"❌ Failed to store call record: {db_error}")
+            # Continue processing even if database storage fails
         
         # Simplified logging - only key information
         logger.info(f"🎤 Voice Input: '{transcript}'")

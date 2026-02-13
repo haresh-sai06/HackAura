@@ -12,7 +12,7 @@
 
 /* Placeholder text */
 .filters-card ::placeholder {
-  color: #9ca3af !important; /* Light gray for placeholder */
+  color: white !important;
   opacity: 1 !important;
 }
 
@@ -54,7 +54,7 @@
 
 /* Ensure dropdown text is always visible */
 .filters-card [data-placeholder] {
-  color: #9ca3af !important;
+  color: white !important;
 }
 
 /* Select trigger arrow */
