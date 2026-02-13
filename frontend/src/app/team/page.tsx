@@ -160,7 +160,7 @@ export default function TeamPage() {
 
         {/* Team Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-green-200 dark:border-green-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-green-600 dark:text-green-300 flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -168,14 +168,14 @@ export default function TeamPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-700 dark:text-green-200">{onlineCount}</div>
-              <CardDescription className="text-green-600 dark:text-green-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{onlineCount}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 of {teamMembers.length} total members
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-blue-200 dark:border-blue-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-blue-600 dark:text-blue-300 flex items-center gap-2">
                 <Activity className="h-5 w-5" />
@@ -183,14 +183,14 @@ export default function TeamPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-700 dark:text-blue-200">{availableCount}</div>
-              <CardDescription className="text-blue-600 dark:text-blue-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{availableCount}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Ready for assignment
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 border-orange-200 dark:border-orange-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-orange-600 dark:text-orange-300 flex items-center gap-2">
                 <Phone className="h-5 w-5" />
@@ -198,8 +198,8 @@ export default function TeamPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-700 dark:text-orange-200">{busyCount}</div>
-              <CardDescription className="text-orange-600 dark:text-orange-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{busyCount}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Currently engaged
               </CardDescription>
             </CardContent>
@@ -207,9 +207,9 @@ export default function TeamPage() {
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Filter className="h-5 w-5" />
               Filters
             </CardTitle>
@@ -271,7 +271,7 @@ export default function TeamPage() {
         {/* Team Members Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTeam.map((member) => (
-            <Card key={member.id} className="hover:shadow-lg transition-shadow">
+            <Card key={member.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">

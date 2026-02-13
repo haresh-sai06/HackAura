@@ -22,7 +22,7 @@ export function OverviewSection({
   return (
     <div className="space-y-6">
       {/* Status Cards */}
-      <StatusIndicator />
+      <StatusIndicator calls={calls} />
       
       {/* Recent Calls */}
       <div>

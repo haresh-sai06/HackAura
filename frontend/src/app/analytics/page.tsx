@@ -29,10 +29,32 @@ export default function AnalyticsPage() {
       high: 54,
       critical: 12,
     },
-    callsByHour: Array.from({ length: 24 }, (_, i) => ({
-      hour: i,
-      calls: Math.floor(Math.random() * 15) + 2,
-    })),
+    callsByHour: [
+      { hour: 0, calls: 3 },
+      { hour: 1, calls: 2 },
+      { hour: 2, calls: 1 },
+      { hour: 3, calls: 2 },
+      { hour: 4, calls: 4 },
+      { hour: 5, calls: 6 },
+      { hour: 6, calls: 8 },
+      { hour: 7, calls: 12 },
+      { hour: 8, calls: 15 },
+      { hour: 9, calls: 14 },
+      { hour: 10, calls: 13 },
+      { hour: 11, calls: 11 },
+      { hour: 12, calls: 9 },
+      { hour: 13, calls: 10 },
+      { hour: 14, calls: 12 },
+      { hour: 15, calls: 14 },
+      { hour: 16, calls: 16 },
+      { hour: 17, calls: 13 },
+      { hour: 18, calls: 11 },
+      { hour: 19, calls: 9 },
+      { hour: 20, calls: 7 },
+      { hour: 21, calls: 5 },
+      { hour: 22, calls: 4 },
+      { hour: 23, calls: 3 },
+    ],
     callsByDay: [
       { day: 'Mon', calls: 18 },
       { day: 'Tue', calls: 24 },
@@ -85,7 +107,7 @@ export default function AnalyticsPage() {
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-blue-200 dark:border-blue-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-blue-600 dark:text-blue-300 flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
@@ -93,14 +115,14 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-700 dark:text-blue-200">{analytics.totalCalls}</div>
-              <CardDescription className="text-blue-600 dark:text-blue-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.totalCalls}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 +12% from last period
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-green-200 dark:border-green-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-green-600 dark:text-green-300 flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -108,14 +130,14 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-700 dark:text-green-200">{analytics.activeCalls}</div>
-              <CardDescription className="text-green-600 dark:text-green-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.activeCalls}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Currently in progress
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900 dark:to-amber-800 border-amber-200 dark:border-amber-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-amber-600 dark:text-amber-300 flex items-center gap-2">
                 <Clock className="h-5 w-5" />
@@ -123,14 +145,14 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-amber-700 dark:text-amber-200">{analytics.averageResponseTime} min</div>
-              <CardDescription className="text-amber-600 dark:text-amber-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.averageResponseTime} min</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 -0.3 from average
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 border-red-200 dark:border-red-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-red-600 dark:text-red-300 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
@@ -138,8 +160,8 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-700 dark:text-red-200">{analytics.callsBySeverity.critical}</div>
-              <CardDescription className="text-red-600 dark:text-red-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.callsBySeverity.critical}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Requires immediate attention
               </CardDescription>
             </CardContent>
@@ -149,10 +171,10 @@ export default function AnalyticsPage() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Calls by Type */}
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle>Calls by Emergency Type</CardTitle>
-              <CardDescription>Distribution of emergency calls by type</CardDescription>
+              <CardTitle className="text-gray-900 dark:text-gray-100">Calls by Emergency Type</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">Distribution of emergency calls by type</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -181,10 +203,10 @@ export default function AnalyticsPage() {
           </Card>
 
           {/* Calls by Severity */}
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle>Calls by Severity</CardTitle>
-              <CardDescription>Distribution of emergency calls by severity level</CardDescription>
+              <CardTitle className="text-gray-900 dark:text-gray-100">Calls by Severity</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">Distribution of emergency calls by severity level</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -214,17 +236,17 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Hourly Distribution */}
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle>Hourly Call Distribution</CardTitle>
-            <CardDescription>Number of calls by hour of day</CardDescription>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Hourly Call Distribution</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">Number of calls by hour of day</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-64 flex items-end justify-between gap-1">
               {analytics.callsByHour.map((hour) => (
                 <div
                   key={hour.hour}
-                  className="flex-1 bg-blue-600 rounded-t hover:bg-blue-700 transition-colors relative group"
+                  className="flex-1 bg-blue-600 rounded-t hover:bg-blue-700 transition-all duration-300 ease-out relative group cursor-pointer transform hover:scale-y-105"
                   style={{ height: `${(hour.calls / 20) * 100}%` }}
                 >
                   <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -244,10 +266,10 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Weekly Distribution */}
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle>Weekly Call Distribution</CardTitle>
-            <CardDescription>Number of calls by day of week</CardDescription>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Weekly Call Distribution</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">Number of calls by day of week</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-48 flex items-end justify-between gap-2">
@@ -257,7 +279,7 @@ export default function AnalyticsPage() {
                   className="flex-1 flex flex-col items-center gap-2"
                 >
                   <div
-                    className="w-full bg-green-600 rounded-t hover:bg-green-700 transition-colors relative group"
+                    className="w-full bg-green-600 rounded-t hover:bg-green-700 transition-all duration-300 ease-out relative group cursor-pointer transform hover:scale-y-105"
                     style={{ height: `${(day.calls / 35) * 100}%` }}
                   >
                     <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">

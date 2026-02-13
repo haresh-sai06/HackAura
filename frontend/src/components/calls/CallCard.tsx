@@ -1,6 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
 import { Phone, MapPin, Clock, AlertTriangle } from 'lucide-react';
 import { EmergencyCall, EmergencyType, Severity, CallStatus } from '@/types/emergency';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -39,6 +40,16 @@ const statusColors = {
 };
 
 export function CallCard({ call, onSelect, onAssign, className }: CallCardProps) {
+  const [formattedTime, setFormattedTime] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    // Format the date only on the client side
+    const formatted = format(new Date(call.timestamp), 'MMM d, yyyy HH:mm');
+    setFormattedTime(formatted);
+  }, [call.timestamp]);
+
   const handleSelect = () => {
     onSelect?.(call);
   };
@@ -107,7 +118,9 @@ export function CallCard({ call, onSelect, onAssign, className }: CallCardProps)
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Time</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{format(new Date(call.timestamp), 'MMM d, yyyy HH:mm')}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {isClient ? formattedTime : 'Loading...'}
+              </p>
             </div>
           </div>
           

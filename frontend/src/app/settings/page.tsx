@@ -218,8 +218,10 @@ export default function SettingsPage() {
             </Button>
             <label className="cursor-pointer">
               <Button variant="outline" asChild>
-                <Upload className="h-4 w-4 mr-2" />
-                Import
+                <span>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import
+                </span>
               </Button>
               <input type="file" accept=".json" onChange={handleImport} className="hidden" />
             </label>
@@ -252,10 +254,10 @@ export default function SettingsPage() {
 
           {/* Profile Settings */}
           <TabsContent value="profile">
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-                <CardDescription>Manage your personal information and preferences</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Profile Settings</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">Manage your personal information and preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -343,10 +345,10 @@ export default function SettingsPage() {
 
           {/* Notification Settings */}
           <TabsContent value="notifications">
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>Choose how you want to receive notifications</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Notification Preferences</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">Choose how you want to receive notifications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -447,10 +449,10 @@ export default function SettingsPage() {
 
           {/* Appearance Settings */}
           <TabsContent value="appearance">
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>Appearance Settings</CardTitle>
-                <CardDescription>Customize the look and feel of your dashboard</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Appearance Settings</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">Customize the look and feel of your dashboard</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -554,10 +556,10 @@ export default function SettingsPage() {
 
           {/* Security Settings */}
           <TabsContent value="security">
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>Manage your account security and access controls</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Security Settings</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">Manage your account security and access controls</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -644,10 +646,10 @@ export default function SettingsPage() {
 
           {/* System Settings */}
           <TabsContent value="system">
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>System Configuration</CardTitle>
-                <CardDescription>Configure system endpoints and technical settings</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-gray-100">System Configuration</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">Configure system endpoints and technical settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

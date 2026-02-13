@@ -181,7 +181,7 @@ export default function NotificationsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-blue-200 dark:border-blue-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-blue-600 dark:text-blue-300 flex items-center gap-2">
                 <Bell className="h-5 w-5" />
@@ -189,14 +189,14 @@ export default function NotificationsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-700 dark:text-blue-200">{notificationsList.length}</div>
-              <CardDescription className="text-blue-600 dark:text-blue-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{notificationsList.length}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 All notifications
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 border-red-200 dark:border-red-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-red-600 dark:text-red-300 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
@@ -204,14 +204,14 @@ export default function NotificationsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-700 dark:text-red-200">{unreadCount}</div>
-              <CardDescription className="text-red-600 dark:text-red-400">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{unreadCount}</div>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Require attention
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 border-orange-200 dark:border-orange-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-orange-600 dark:text-orange-300 flex items-center gap-2">
                 <Phone className="h-5 w-5" />
@@ -219,16 +219,16 @@ export default function NotificationsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-700 dark:text-orange-200">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {notificationsList.filter(n => n.type.includes('call')).length}
               </div>
-              <CardDescription className="text-orange-600 dark:text-orange-400">
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Call-related
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-purple-200 dark:border-purple-700">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-purple-600 dark:text-purple-300 flex items-center gap-2">
                 <Activity className="h-5 w-5" />
@@ -236,10 +236,10 @@ export default function NotificationsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-700 dark:text-purple-200">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {notificationsList.filter(n => n.type === 'system_alert').length}
               </div>
-              <CardDescription className="text-purple-600 dark:text-purple-400">
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 System alerts
               </CardDescription>
             </CardContent>
@@ -247,9 +247,9 @@ export default function NotificationsPage() {
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Filter className="h-5 w-5" />
               Filters
             </CardTitle>
@@ -314,7 +314,7 @@ export default function NotificationsPage() {
             return (
               <Card 
                 key={notification.id} 
-                className={`transition-all hover:shadow-md ${
+                className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:shadow-lg ${
                   !notification.read ? 'border-l-4 border-l-blue-500' : ''
                 }`}
               >

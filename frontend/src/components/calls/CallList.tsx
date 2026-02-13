@@ -53,10 +53,10 @@ export function CallList({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-bold text-white">Emergency Calls</h2>
-          <p className="text-gray-300 dark:text-gray-400 mt-1">
-            <span className="font-semibold text-white">{activeCallsCount}</span> active calls • 
-            <span className="font-semibold text-white">{calls.length}</span> total
+          <h2 className="text-3xl font-bold text-slate-900">Emergency Calls</h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <span className="font-semibold text-slate-900">{activeCallsCount}</span> active calls • 
+            <span className="font-semibold text-slate-900">{calls.length}</span> total
           </p>
         </div>
         <Button 
@@ -70,27 +70,27 @@ export function CallList({
       </div>
 
       {/* Filters */}
-      <div className="filters-card bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <h3 className="text-lg font-semibold text-white mb-4">Filters</h3>
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-6 relative">
+        <h2 className="text-lg font-semibold text-slate-800 mb-4">Filters</h2>
         
         {/* Search */}
         <div className="relative mb-4">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
           <Input
             placeholder="Search calls by name, phone, location, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="filters-card pl-12 h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 text-white placeholder:text-gray-400"
+            className="w-full bg-white text-black placeholder:text-gray-500 border border-gray-300 rounded-lg py-3 pl-10 pr-4 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         {/* Filter dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 relative z-10">
           <Select value={statusFilter} onValueChange={(value: string) => setStatusFilter(value as CallStatus | 'all')}>
-            <SelectTrigger className="filters-card h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-white">
+            <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-lg z-50 mt-2">
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value={CallStatus.PENDING}>Pending</SelectItem>
               <SelectItem value={CallStatus.IN_PROGRESS}>In Progress</SelectItem>
@@ -101,10 +101,10 @@ export function CallList({
           </Select>
 
           <Select value={severityFilter} onValueChange={(value: string) => setSeverityFilter(value as Severity | 'all')}>
-            <SelectTrigger className="filters-card h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-white">
+            <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
               <SelectValue placeholder="Filter by severity" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-lg z-50 mt-2">
               <SelectItem value="all">All Severities</SelectItem>
               <SelectItem value={Severity.LOW}>Low</SelectItem>
               <SelectItem value={Severity.MEDIUM}>Medium</SelectItem>
@@ -114,10 +114,10 @@ export function CallList({
           </Select>
 
           <Select value={typeFilter} onValueChange={(value: string) => setTypeFilter(value as EmergencyType | 'all')}>
-            <SelectTrigger className="filters-card h-11 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-white">
+            <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-lg z-50 mt-2">
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value={EmergencyType.MEDICAL}>Medical</SelectItem>
               <SelectItem value={EmergencyType.FIRE}>Fire</SelectItem>
@@ -170,8 +170,11 @@ export function CallList({
         )}
       </div>
 
+      {/* Visual Divider */}
+      <div className="border-t border-gray-200 my-6"></div>
+
       {/* Call list */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
