@@ -14,7 +14,7 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gradient-mint dark:bg-gradient-dark-gray">
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
