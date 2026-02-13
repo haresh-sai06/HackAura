@@ -1,6 +1,6 @@
 import re
 import logging
-from typing import Dict, List, Tuple
+from typing import List
 from models.emergency_schema import EmergencyType, ClassificationResult
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,8 @@ class ClassificationEngine:
             EmergencyType.FIRE: [
                 'fire', 'burning', 'smoke', 'flames', 'explosion', 'caught fire',
                 'on fire', 'smoking', 'electrical fire', 'gas leak', 'building on fire',
-                'house fire', 'forest fire', 'arson', 'extinguisher', 'fire department'
+                'house fire', 'forest fire', 'arson', 'extinguisher', 'fire department',
+                'fire accident', 'fire emergency'
             ],
             EmergencyType.POLICE: [
                 'police', 'theft', 'stolen', 'robbery', 'burglar', 'break in', 'assault',
@@ -44,7 +45,7 @@ class ClassificationEngine:
         
     def classify(self, transcript: str) -> ClassificationResult:
         """
-        Classify emergency type based on transcript using keyword matching
+        Classify emergency type from transcript
         
         Args:
             transcript: Transcribed emergency call text
@@ -52,72 +53,65 @@ class ClassificationEngine:
         Returns:
             ClassificationResult with emergency type and confidence
         """
-        try:
-            logger.info(f"Starting classification for transcript: {transcript[:100]}...")
+        logger.debug(f"🔍 CLASSIFICATION ENGINE STARTING")
+        logger.debug(f"   Input Transcript: '{transcript}'")
+        logger.debug(f"   Transcript Length: {len(transcript)} characters")
+        logger.debug(f"   Transcript Lower: '{transcript.lower()}'")
+        
+        # DEBUG: Print to console for immediate visibility
+        print(f"🔍 CLASSIFICATION DEBUG: '{transcript.lower()}'")
+        
+        transcript_lower = transcript.lower()
+        scores = {}
+        
+        # Calculate scores for each emergency type
+        for emergency_type, keywords in self.emergency_keywords.items():
+            score = 0
+            matched_keywords = []
             
-            # Normalize text
-            normalized_text = transcript.lower()
+            logger.debug(f"   🏷️  Checking {emergency_type.upper()}:")
             
-            # Calculate scores for each emergency type
-            scores = {}
-            for emergency_type, keywords in self.emergency_keywords.items():
-                score = 0
-                matched_keywords = []
-                
-                for keyword in keywords:
-                    # Count occurrences of each keyword
-                    pattern = re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE)
-                    matches = pattern.findall(normalized_text)
-                    if matches:
-                        count = len(matches)
-                        score += count
-                        matched_keywords.extend([keyword] * count)
-                
-                scores[emergency_type] = {
-                    'score': score,
-                    'keywords': matched_keywords
-                }
+            for keyword in keywords:
+                if keyword in transcript_lower:
+                    # Count occurrences for weighted scoring
+                    occurrences = transcript_lower.count(keyword)
+                    keyword_score = len(keyword) * occurrences  # Weight by keyword length
+                    score += keyword_score
+                    matched_keywords.append(keyword)
+                    logger.debug(f"      ✅ Found '{keyword}' (x{occurrences}) - Score: {keyword_score}")
+                    print(f"✅ FOUND KEYWORD: '{keyword}' in '{transcript_lower}'")
+                else:
+                    logger.debug(f"      ❌ Missing '{keyword}'")
             
-            # Find the best match
-            best_type = None
-            best_score = 0
-            
-            for emergency_type, data in scores.items():
-                if data['score'] > best_score:
-                    best_score = data['score']
-                    best_type = emergency_type
-            
-            # Calculate confidence based on score and total keywords found
-            total_keywords = sum(data['score'] for data in scores.values())
-            
-            if total_keywords == 0:
-                # No keywords found, default to medical with low confidence
-                confidence = 0.3
-                emergency_type = EmergencyType.MEDICAL
-                logger.warning("No emergency keywords detected, defaulting to medical")
-            else:
-                confidence = min(best_score / total_keywords, 1.0)
-                emergency_type = best_type
-            
-            # Ensure minimum confidence threshold
-            if confidence < 0.3:
-                confidence = 0.3
-            
-            result = ClassificationResult(
-                emergency_type=emergency_type,
-                confidence=confidence
-            )
-            
-            logger.info(f"Classification result: {emergency_type.value} with confidence {confidence:.2f}")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Classification failed: {e}")
-            # Return default classification on error
-            return ClassificationResult(
-                emergency_type=EmergencyType.MEDICAL,
-                confidence=0.3
-            )
+            scores[emergency_type] = score
+            logger.debug(f"   📊 {emergency_type.upper()} Total Score: {score}")
+            logger.debug(f"   🎯 Matched Keywords: {matched_keywords}")
+            print(f"📊 {emergency_type.upper()} SCORE: {score}")
+        
+        # Find the emergency type with highest score
+        best_type = max(scores, key=scores.get)
+        best_score = scores[best_type]
+        
+        # Normalize score to 0-1 range
+        max_possible_score = sum(len(k) for k in self.emergency_keywords[best_type])
+        confidence = min(best_score / max_possible_score, 1.0) if max_possible_score > 0 else 0.0
+        
+        logger.debug(f"🏆 CLASSIFICATION RESULTS:")
+        logger.debug(f"   🥇 Best Type: {best_type}")
+        logger.debug(f"   📈 Best Score: {best_score}")
+        logger.debug(f"   🎯 Max Possible Score: {max_possible_score}")
+        logger.debug(f"   📊 Normalized Confidence: {confidence:.3f}")
+        logger.debug(f"   📋 All Scores: {scores}")
+        
+        print(f"🏆 FINAL RESULT: {best_type} (confidence: {confidence:.2f})")
+        
+        result = ClassificationResult(
+            emergency_type=EmergencyType(best_type),
+            confidence=confidence
+        )
+        
+        logger.info(f"✅ CLASSIFICATION COMPLETE: {best_type} (confidence: {confidence:.2f})")
+        return result
 
 
 # Global instance

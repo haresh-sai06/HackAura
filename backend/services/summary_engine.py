@@ -39,62 +39,99 @@ class SummaryEngine:
         Args:
             transcript: Original transcribed text
             emergency_type: Classified emergency type
-            severity_level: Calculated severity level
+            severity_level: Determined severity level
             risk_indicators: List of detected risk indicators
             
         Returns:
             Concise, operational summary for dispatchers
         """
+        logger.debug(f"📝 SUMMARY ENGINE STARTING")
+        logger.debug(f"   Input Transcript: '{transcript}'")
+        logger.debug(f"   Emergency Type: {emergency_type.value}")
+        logger.debug(f"   Severity Level: {severity_level.value}")
+        logger.debug(f"   Risk Indicators: {risk_indicators}")
+        
         try:
             logger.info(f"Generating summary for {emergency_type.value} emergency")
             
             # Extract key information
+            victim_count = self._extract_victim_count(transcript)
             location = self._extract_location(transcript)
-            victim_info = self._extract_victim_info(transcript)
             time_info = self._extract_time_info(transcript)
+            key_details = self._extract_key_details(transcript, risk_indicators)
             
-            # Build summary components
+            logger.debug(f"   🔍 INFORMATION EXTRACTION:")
+            logger.debug(f"      Victim Count: {victim_count}")
+            logger.debug(f"      Location: '{location}'")
+            logger.debug(f"      Time Info: '{time_info}'")
+            logger.debug(f"      Key Details: '{key_details}'")
+            
+            # Build summary parts
             summary_parts = []
             
-            # Start with emergency type and severity
+            # Emergency type and severity
             severity_desc = self._get_severity_description(severity_level)
             summary_parts.append(f"{severity_desc} {emergency_type.value} emergency")
+            logger.debug(f"      Base Summary: '{severity_desc} {emergency_type.value} emergency'")
             
-            # Add victim information if available
-            if victim_info:
-                summary_parts.append(f"Victim: {victim_info}")
+            # Victim information
+            if victim_count:
+                victim_text = f"Victim(s): {victim_count}"
+                summary_parts.append(victim_text)
+                logger.debug(f"      Added Victim Info: '{victim_text}'")
             
-            # Add key symptoms/incident details
-            key_details = self._extract_key_details(transcript, risk_indicators)
+            # Key details
             if key_details:
                 summary_parts.append(f"Details: {key_details}")
+                logger.debug(f"      Added Details: 'Details: {key_details}'")
             
-            # Add location if available
+            # Location if available
             if location:
                 summary_parts.append(f"Location: {location}")
+                logger.debug(f"      Added Location: 'Location: {location}'")
             
-            # Add time information if available
+            # Time information if available
             if time_info:
                 summary_parts.append(f"Time: {time_info}")
+                logger.debug(f"      Added Time: 'Time: {time_info}'")
             
             # Add action required based on emergency type
             action_required = self._get_action_required(emergency_type, severity_level)
             summary_parts.append(f"Action: {action_required}")
+            logger.debug(f"      Added Action: 'Action: {action_required}'")
             
             # Combine into final summary
             summary = ". ".join(summary_parts) + "."
             
+            logger.debug(f"   📋 SUMMARY CONSTRUCTION:")
+            logger.debug(f"      Summary Parts: {summary_parts}")
+            logger.debug(f"      Raw Summary: '{summary}'")
+            logger.debug(f"      Summary Length: {len(summary)} characters")
+            
             # Ensure summary is concise (max 200 characters for dispatcher readability)
             if len(summary) > 200:
+                original_summary = summary
                 summary = self._truncate_summary(summary)
+                logger.debug(f"      Summary Truncated: '{original_summary}' -> '{summary}'")
             
-            logger.info(f"Generated summary: {summary}")
+            logger.debug(f"   🎯 FINAL SUMMARY:")
+            logger.debug(f"      Final Summary: '{summary}'")
+            logger.debug(f"      Final Length: {len(summary)} characters")
+            
+            logger.info(f"📝 SUMMARY COMPLETE: '{summary}'")
             return summary
             
         except Exception as e:
-            logger.error(f"Summary generation failed: {e}")
+            logger.error(f"❌ SUMMARY GENERATION FAILED: {e}")
+            logger.error(f"🔍 ERROR DETAILS:")
+            logger.error(f"   Transcript: '{transcript}'")
+            logger.error(f"   Emergency Type: {emergency_type.value}")
+            logger.error(f"   Severity Level: {severity_level.value}")
+            logger.error(f"   Risk Indicators: {risk_indicators}")
             # Return basic summary on error
-            return f"{emergency_type.value} emergency detected. {severity_level.value} severity. Immediate response required."
+            fallback_summary = f"{emergency_type.value} emergency detected. {severity_level.value} severity. Immediate response required."
+            logger.warning(f"📝 FALLBACK SUMMARY: '{fallback_summary}'")
+            return fallback_summary
     
     def _extract_location(self, transcript: str) -> Optional[str]:
         """Extract location information from transcript"""

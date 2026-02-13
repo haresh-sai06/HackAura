@@ -1,12 +1,7 @@
 from twilio.twiml.voice_response import VoiceResponse, Gather, Record
 from typing import Optional
-<<<<<<< HEAD
 from config import settings
 from models.emergency_schema import TriageResult
-=======
-from backend.config import settings
-
->>>>>>> 91c63386882b7ea903abf849c9707bba1e9f19a8
 
 class TwilioService:
     def __init__(self):
@@ -244,7 +239,7 @@ class TwilioService:
         
         return str(response)
     
-    def generate_error_response(self, error_message: str = "I'm sorry, I'm experiencing technical difficulties.") -> str:
+    def generate_error_response(self, error_message: str = "I'm sorry, I'm experiencing technical difficulties") -> str:
         """Generate TwiML response for error cases"""
         response = VoiceResponse()
         

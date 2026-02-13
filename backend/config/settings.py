@@ -38,7 +38,6 @@ class Settings:
         # Emergency Processing Configuration
         self.MAX_RECORDING_LENGTH = int(os.getenv("MAX_RECORDING_LENGTH", "30"))  # seconds
         self.SPEECH_TIMEOUT = int(os.getenv("SPEECH_TIMEOUT", "5"))
-<<<<<<< HEAD
         self.MAX_PROCESSING_TIME = int(os.getenv("MAX_PROCESSING_TIME", "5000"))  # milliseconds
         
         # Emergency Classification Thresholds
@@ -46,32 +45,22 @@ class Settings:
         self.SEVERITY_THRESHOLD_CRITICAL = float(os.getenv("SEVERITY_THRESHOLD_CRITICAL", "80"))
         self.SEVERITY_THRESHOLD_HIGH = float(os.getenv("SEVERITY_THRESHOLD_HIGH", "60"))
         self.SEVERITY_THRESHOLD_MODERATE = float(os.getenv("SEVERITY_THRESHOLD_MODERATE", "40"))
-=======
         
-        # Email Configuration
-        self.SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        self.SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-        self.SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-        self.SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-        self.FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@hackaura.com")
+        # Debug Configuration
+        self.DEBUG_MODE = os.getenv("DEBUG_MODE", "true").lower() == "true"
+        self.VERBOSE_LOGGING = os.getenv("VERBOSE_LOGGING", "true").lower() == "true"
+        self.LOG_REQUESTS = os.getenv("LOG_REQUESTS", "true").lower() == "true"
+        self.LOG_RESPONSES = os.getenv("LOG_RESPONSES", "true").lower() == "true"
+        self.LOG_TRIAGE_STEPS = os.getenv("LOG_TRIAGE_STEPS", "true").lower() == "true"
         
-        # Webhook Configuration
-        self.WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
-        
-        # Emergency Configuration
-        self.EMERGENCY_AUTO_ESCALATION = os.getenv("EMERGENCY_AUTO_ESCALATION", "true").lower() == "true"
-        self.EMERGENCY_RESPONSE_TIME_THRESHOLD = int(os.getenv("EMERGENCY_RESPONSE_TIME_THRESHOLD", "30"))
-        self.EMERGENCY_MAX_ESCALATION_LEVEL = int(os.getenv("EMERGENCY_MAX_ESCALATION_LEVEL", "3"))
-        
-        # Analytics Configuration
-        self.ANALYTICS_RETENTION_DAYS = int(os.getenv("ANALYTICS_RETENTION_DAYS", "90"))
-        self.ANALYTICS_REAL_TIME_UPDATES = os.getenv("ANALYTICS_REAL_TIME_UPDATES", "true").lower() == "true"
-        
-        # Team Configuration
-        self.TEAM_MAX_CONCURRENT_CALLS = int(os.getenv("TEAM_MAX_CONCURRENT_CALLS", "3"))
-        self.TEAM_AUTO_ASSIGN_CALLS = os.getenv("TEAM_AUTO_ASSIGN_CALLS", "true").lower() == "true"
-        self.TEAM_SKILL_MATCHING = os.getenv("TEAM_SKILL_MATCHING", "true").lower() == "true"
->>>>>>> 91c63386882b7ea903abf849c9707bba1e9f19a8
+        # Print debug settings on startup
+        if self.DEBUG_MODE:
+            print("🐛 DEBUG MODE ENABLED")
+            print(f"📊 Verbose Logging: {self.VERBOSE_LOGGING}")
+            print(f"📝 Log Requests: {self.LOG_REQUESTS}")
+            print(f"📤 Log Responses: {self.LOG_RESPONSES}")
+            print(f"🎯 Log Triage Steps: {self.LOG_TRIAGE_STEPS}")
+            print("=" * 50)
 
 
 settings = Settings()

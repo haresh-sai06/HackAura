@@ -1,9 +1,8 @@
 import logging
-from typing import Dict, List
-from models.emergency_schema import EmergencyType, EmergencyService, RoutingResult, SeverityLevel
+from typing import Dict, Any
+from models.emergency_schema import EmergencyType, SeverityLevel, EmergencyService, RoutingResult
 
 logger = logging.getLogger(__name__)
-
 
 class RoutingEngine:
     def __init__(self):
@@ -13,7 +12,8 @@ class RoutingEngine:
             EmergencyType.FIRE: EmergencyService.FIRE_DEPARTMENT,
             EmergencyType.POLICE: EmergencyService.POLICE,
             EmergencyType.ACCIDENT: EmergencyService.MULTIPLE,  # Ambulance + Police
-            EmergencyType.MENTAL_HEALTH: EmergencyService.CRISIS_RESPONSE
+            EmergencyType.MENTAL_HEALTH: EmergencyService.CRISIS_RESPONSE,
+            EmergencyType.OTHER: EmergencyService.POLICE
         }
         
         # Priority mapping (1-10, where 1 is highest priority)
@@ -32,47 +32,96 @@ class RoutingEngine:
             }
         }
     
-    def route(self, emergency_type: EmergencyType, severity_level: SeverityLevel) -> RoutingResult:
+    def route_emergency(self, emergency_type: EmergencyType, severity_level: SeverityLevel) -> RoutingResult:
         """
-        Determine appropriate emergency service and priority based on type and severity
+        Route emergency to appropriate service based on type and severity
         
         Args:
-            emergency_type: Classified emergency type
-            severity_level: Calculated severity level
+            emergency_type: Type of emergency
+            severity_level: Severity level of emergency
             
         Returns:
             RoutingResult with assigned service and priority
         """
-        try:
-            logger.info(f"Routing emergency: {emergency_type.value} with severity {severity_level.value}")
-            
-            # Get assigned service based on emergency type
-            assigned_service = self.routing_rules.get(emergency_type, EmergencyService.AMBULANCE)
-            
-            # Get priority based on severity level
-            priority = self.priority_rules.get(severity_level, 6)
-            
-            # Adjust priority for specific scenarios
-            priority = self._adjust_priority(emergency_type, severity_level, priority)
-            
-            # Ensure priority is within valid range
-            priority = max(1, min(10, priority))
-            
-            result = RoutingResult(
-                assigned_service=assigned_service,
-                priority=priority
-            )
-            
-            logger.info(f"Routing result: {assigned_service.value} with priority {priority}")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Routing failed: {e}")
-            # Return default routing on error
-            return RoutingResult(
-                assigned_service=EmergencyService.AMBULANCE,
-                priority=6
-            )
+        logger.debug(f"🚑 ROUTING ENGINE STARTING")
+        logger.debug(f"   Emergency Type: {emergency_type.value}")
+        logger.debug(f"   Severity Level: {severity_level.value}")
+        
+        # Base routing by emergency type
+        base_routing = {
+            EmergencyType.MEDICAL: EmergencyService.AMBULANCE,
+            EmergencyType.FIRE: EmergencyService.FIRE_DEPARTMENT,
+            EmergencyType.POLICE: EmergencyService.POLICE,
+            EmergencyType.ACCIDENT: EmergencyService.MULTIPLE,
+            EmergencyType.MENTAL_HEALTH: EmergencyService.CRISIS_RESPONSE,
+            EmergencyType.OTHER: EmergencyService.POLICE
+        }
+        
+        assigned_service = base_routing.get(emergency_type, EmergencyService.POLICE)
+        
+        logger.debug(f"   🎯 BASE ROUTING:")
+        logger.debug(f"      Type -> Service: {emergency_type.value} -> {assigned_service.value}")
+        
+        # Adjust for multi-service emergencies
+        if emergency_type == EmergencyType.ACCIDENT:
+            logger.debug(f"      🚗 ACCIDENT DETECTED - Multiple services needed")
+            if severity_level in [SeverityLevel.LEVEL_1, SeverityLevel.LEVEL_2]:
+                logger.debug(f"         High severity accident -> Ambulance + Fire + Police")
+                assigned_service = EmergencyService.MULTIPLE
+            else:
+                logger.debug(f"         Low severity accident -> Police + Ambulance")
+                assigned_service = EmergencyService.MULTIPLE
+        
+        # Calculate priority based on severity
+        priority_mapping = {
+            SeverityLevel.LEVEL_1: 1,  # Critical - highest priority
+            SeverityLevel.LEVEL_2: 2,  # High
+            SeverityLevel.LEVEL_3: 4,  # Moderate
+            SeverityLevel.LEVEL_4: 6   # Low - lowest priority
+        }
+        
+        base_priority = priority_mapping.get(severity_level, 4)
+        
+        logger.debug(f"   📊 PRIORITY CALCULATION:")
+        logger.debug(f"      Severity -> Base Priority: {severity_level.value} -> {base_priority}")
+        
+        # Adjust priority based on emergency type
+        if emergency_type == EmergencyType.MEDICAL:
+            if severity_level == SeverityLevel.LEVEL_1:
+                priority = 1
+                logger.debug(f"      🏥 Critical medical -> Priority 1 (highest)")
+            else:
+                priority = base_priority - 1
+                logger.debug(f"      🏥 Medical emergency -> Priority {priority} (elevated)")
+        elif emergency_type == EmergencyType.FIRE:
+            priority = base_priority - 1
+            logger.debug(f"      🔥 Fire emergency -> Priority {priority} (elevated)")
+        elif emergency_type == EmergencyType.POLICE:
+            if severity_level == SeverityLevel.LEVEL_1:
+                priority = 1
+                logger.debug(f"      👮 Critical police -> Priority 1 (highest)")
+            else:
+                priority = base_priority
+                logger.debug(f"      👮 Police emergency -> Priority {priority} (standard)")
+        else:
+            priority = base_priority
+            logger.debug(f"      📋 Standard routing -> Priority {priority}")
+        
+        # Ensure priority is within valid range
+        priority = max(1, min(10, priority))
+        
+        logger.debug(f"   🎯 FINAL ROUTING DECISION:")
+        logger.debug(f"      Assigned Service: {assigned_service.value}")
+        logger.debug(f"      Final Priority: {priority}")
+        logger.debug(f"      Priority Range: 1 (highest) to 10 (lowest)")
+        
+        result = RoutingResult(
+            assigned_service=assigned_service,
+            priority=priority
+        )
+        
+        logger.info(f"🚑 ROUTING COMPLETE: {assigned_service.value} (priority: {priority})")
+        return result
     
     def _adjust_priority(self, emergency_type: EmergencyType, severity_level: SeverityLevel, base_priority: int) -> int:
         """

@@ -10,6 +10,7 @@ class EmergencyType(str, Enum):
     POLICE = "police"
     ACCIDENT = "accident"
     MENTAL_HEALTH = "mental_health"
+    OTHER = "other"
 
 
 class SeverityLevel(str, Enum):

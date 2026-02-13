@@ -1,0 +1,154 @@
+# Backend-specific gitignore additions
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environment and Configuration
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+config/production.py
+config/development.py
+local_settings.py
+
+# Services and API Keys (CRITICAL - NEVER COMMIT)
+services/credentials/
+services/api_keys/
+services/secrets/
+services/config/
+*.service-account.json
+twilio-account.json
+google-credentials.json
+api_keys.txt
+secrets.txt
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/
+db/
+data/
+
+# Logs
+logs/
+*.log
+debug.log
+error.log
+access.log
+app.log
+server.log
+
+# Temporary and Cache
+tmp/
+temp/
+cache/
+.cache/
+*.tmp
+*.temp
+
+# Test files and outputs
+test_results/
+tests/output/
+*.test
+test_*.py
+
+# Documentation (generated)
+docs/generated/
+api_docs/
+swagger/
+
+# Monitoring and Analytics
+monitoring/
+analytics/
+usage_stats/
+metrics/
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Build and Distribution
+build/
+dist/
+bin/
+out/
+*.egg-info/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+certificates/
+ssl/
+
+# Local development
+local/
+dev/
+development/
+test_data/
+mock_data/
+
+# External service configurations
+twilio_config.json
+google_maps_api.txt
+emergency_services_db.json
+
+# Generated files
+generated/
+output/
+
+# FastAPI specific
+.coverage
+htmlcov/
+
+# Pydantic models (if containing sensitive data)
+sensitive_models.py
+*_sensitive.py
+
+# Middleware and filters with sensitive logic
+auth_middleware_sensitive.py
+security_filters.py
+
+# Service implementations with credentials
+gemini_service_sensitive.py
+twilio_service_sensitive.py
+notification_service_sensitive.py

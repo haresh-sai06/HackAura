@@ -36,35 +36,30 @@ class TriageEngine:
         start_time = time.time()
         
         try:
-            logger.info(f"Starting triage processing for transcript: {transcript[:100]}...")
+            logger.debug(f"Processing transcript: {transcript[:50]}...")
             
             # Step 1: Classification
-            logger.info("Step 1: Classification")
             classification_result = self.classification_engine.classify(transcript)
-            logger.info(f"Classification: {classification_result.emergency_type.value} (confidence: {classification_result.confidence:.2f})")
+            logger.debug(f"Classification: {classification_result.emergency_type.value}")
             
             # Step 2: Severity Assessment
-            logger.info("Step 2: Severity Assessment")
-            severity_result = self.severity_engine.calculate(transcript)
-            logger.info(f"Severity: {severity_result.level.value} (score: {severity_result.score})")
+            severity_result = self.severity_engine.calculate_severity(transcript, classification_result.emergency_type)
+            logger.debug(f"Severity: {severity_result.level.value}")
             
             # Step 3: Routing
-            logger.info("Step 3: Routing")
-            routing_result = self.routing_engine.route(
+            routing_result = self.routing_engine.route_emergency(
                 classification_result.emergency_type, 
                 severity_result.level
             )
-            logger.info(f"Routing: {routing_result.assigned_service.value} (priority: {routing_result.priority})")
+            logger.debug(f"Routing: {routing_result.assigned_service.value}")
             
             # Step 4: Summary Generation
-            logger.info("Step 4: Summary Generation")
             summary = self.summary_engine.generate(
                 transcript,
                 classification_result.emergency_type,
                 severity_result.level,
                 severity_result.risk_indicators
             )
-            logger.info(f"Summary: {summary[:100]}...")
             
             # Calculate processing time
             processing_time = (time.time() - start_time) * 1000  # Convert to milliseconds
@@ -86,13 +81,12 @@ class TriageEngine:
                 assigned_service=routing_result.assigned_service,
                 priority=routing_result.priority,
                 location=self._extract_location(transcript),
-                summary=summary_result.summary,
+                summary=summary,
                 confidence=overall_confidence,
                 processing_time_ms=processing_time
             )
             
-            logger.info(f"Triage completed in {processing_time:.2f}ms")
-            self._log_triage_result(triage_result)
+            logger.debug(f"Triage completed in {processing_time:.2f}ms")
             
             return triage_result
             
