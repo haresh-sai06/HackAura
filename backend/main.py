@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
-from backend.config import settings
-from backend.routes import voice_router
+from config import settings
+from routes.voice import router as voice_router
 
 # Configure logging
 logging.basicConfig(
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="Voice AI Phone Assistant",
-    description="A Twilio-powered voice assistant using OpenAI",
-    version="1.0.0"
+    title="RAPID-100 - Real-Time AI for Priority Incident Dispatch",
+    description="Emergency triage intelligence engine for real-time incident dispatch",
+    version="2.0.0"
 )
 
 # Add CORS middleware
@@ -36,11 +36,13 @@ app.include_router(voice_router, prefix="/api", tags=["voice"])
 async def root():
     """Root endpoint to check if server is running"""
     return {
-        "message": "Voice AI Phone Assistant is running",
+        "message": "RAPID-100 Emergency Triage System is running",
         "status": "active",
+        "system": "Real-Time AI for Priority Incident Dispatch",
+        "version": "2.0.0",
         "endpoints": {
-            "voice_webhook": "/api/voice",
-            "process_speech": "/api/voice/process",
+            "emergency_webhook": "/api/voice",
+            "process_emergency": "/api/voice/process",
             "call_status": "/api/voice/status"
         }
     }
@@ -51,13 +53,14 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "service": "Voice AI Phone Assistant",
-        "version": "1.0.0"
+        "service": "RAPID-100 Emergency Triage System",
+        "version": "2.0.0",
+        "system_type": "Emergency Triage Intelligence Engine"
     }
 
 
 if __name__ == "__main__":
-    logger.info("Starting Voice AI Phone Assistant server...")
+    logger.info("Starting RAPID-100 Emergency Triage System...")
     logger.info(f"Server will run on http://{settings.HOST}:{settings.PORT}")
     
     uvicorn.run(
