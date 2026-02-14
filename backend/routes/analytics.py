@@ -140,19 +140,7 @@ async def get_analytics():
     except Exception as e:
         print(f"Error in analytics: {e} (PRINT)")
         logger.error(f"Error in analytics: {e}", exc_info=True)
-        # Return mock data on error
-        return {
-            "totalCalls": 0, 
-            "callsByStatus": {"pending": 0, "in_progress": 0, "dispatched": 0, "resolved": 0, "cancelled": 0},
-            "callsByType": {"medical": 0, "fire": 0, "police": 0, "accident": 0, "mental_health": 0, "other": 0},
-            "callsBySeverity": {"low": 0, "medium": 0, "high": 0, "critical": 0},
-            "callsByHour": [{"hour": i, "calls": 0} for i in range(24)],
-            "callsByDay": [{"day": day, "calls": 0} for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]],
-            "averageResponseTime": 0,
-            "resolvedCalls": 0,
-            "pendingCalls": 0,
-            "error": str(e)
-        }
+        raise HTTPException(status_code=500, detail=f"Failed to fetch analytics: {str(e)}")
 
 
 @router.post("/analytics/broadcast")
