@@ -27,6 +27,9 @@ class CallStatus(str, enum.Enum):
     DISPATCHED = "DISPATCHED"
     RESOLVED = "RESOLVED"
     CANCELLED = "CANCELLED"
+    AWAITING_FOLLOWUP = "AWAITING_FOLLOWUP"
+    ESCALATED = "ESCALATED"
+    COMPLETED = "COMPLETED"
 
 class EmergencyService(str, enum.Enum):
     AMBULANCE = "AMBULANCE"

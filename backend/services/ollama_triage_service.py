@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class OllamaTriageService:
-    def __init__(self, model_name: str = "qwen2.5:latest", temperature: float = 0.1):
+    def __init__(self, model_name: str = "qwen2.5:0.5b", temperature: float = 0.1):
         """
         Initialize Ollama Triage Service
         
@@ -54,12 +54,19 @@ class OllamaTriageService:
             prompt = self._build_triage_prompt(transcript)
             logger.debug(f"📝 Prompt sent to Ollama: {prompt[:100]}...")
             
-            # Call Ollama model
+            # Call Ollama model with optimized settings
             response = ollama.chat(
                 model=self.model_name,
                 format='json',
                 messages=[{'role': 'user', 'content': prompt}],
-                stream=False
+                stream=False,
+                options={
+                    'temperature': self.temperature,
+                    'num_ctx': 256,  # Reduced context for speed
+                    'num_predict': 100,  # Limit output tokens
+                    'top_k': 5,  # Reduced top_k for speed
+                    'timeout': 3  # 3 second timeout
+                }
             )
             
             # Extract and parse response
@@ -99,8 +106,7 @@ class OllamaTriageService:
     
     def _build_triage_prompt(self, transcript: str) -> str:
         """
-        Build optimized prompt for Ollama model
-        Focused on speed and accuracy for emergency classification
+        Build ultra-minimal prompt for maximum speed
         
         Args:
             transcript: Emergency call transcript
@@ -108,27 +114,23 @@ class OllamaTriageService:
         Returns:
             Formatted prompt for Ollama
         """
-        prompt = f"""You are RAPID-100, an emergency call triage AI. Analyze this emergency call transcript and provide ONLY valid JSON output with no additional text.
+        prompt = f"""Analyze emergency and output JSON:
 
-EMERGENCY CALL TRANSCRIPT:
 "{transcript}"
 
-EMERGENCY TYPES: MEDICAL, FIRE, POLICE, ACCIDENT, MENTAL_HEALTH, OTHER
-SEVERITY LEVELS: LEVEL_1 (Critical: 80-100), LEVEL_2 (High: 60-79), LEVEL_3 (Moderate: 40-59), LEVEL_4 (Low: 0-39)
-SERVICES: AMBULANCE, FIRE_DEPARTMENT, POLICE, CRISIS_RESPONSE, MULTIPLE_SERVICES
+TYPES: MEDICAL,FIRE,POLICE,ACCIDENT,MENTAL_HEALTH,OTHER
+SEVERITY: LEVEL_1(80-100),LEVEL_2(60-79),LEVEL_3(40-59),LEVEL_4(0-39)
+SERVICES: AMBULANCE,FIRE_DEPARTMENT,POLICE,CRISIS_RESPONSE,MULTIPLE
 
-Respond with ONLY this JSON (no other text):
+JSON:
 {{
-  "emergency_type": "the most likely emergency type",
-  "severity_level": "assigned severity level",
+  "emergency_type": "type",
+  "severity_level": "level",
   "severity_score": 0-100,
   "confidence": 0.0-1.0,
-  "risk_indicators": ["critical symptom/danger", "other risk factors"],
-  "assigned_service": "primary emergency service needed",
+  "assigned_service": "service",
   "priority": 1-10,
-  "location": "extracted location if mentioned, or null",
-  "summary": "brief 1-2 line actionable summary for dispatcher",
-  "reasoning": "very brief 1-line reasoning"
+  "summary": "brief summary"
 }}"""
         
         return prompt

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class OllamaResponseGenerator:
-    def __init__(self, model_name: str = "qwen2.5:latest"):
+    def __init__(self, model_name: str = "qwen2.5:0.5b"):
         """Initialize response generator"""
         self.model_name = model_name
         logger.info(f"🎤 Ollama Response Generator initialized with model: {model_name}")
@@ -84,21 +84,23 @@ Emergency Details:
 
 Generate ONLY this JSON response (no other text):
 {{
-  "voice_response": "Calm, clear 1-2 sentence instruction to the caller. Speak naturally.",
-  "safety_precautions": ["actionable precaution 1", "actionable precaution 2", "actionable precaution 3"],
-  "immediate_actions": ["action 1 for caller to take now", "action 2"],
+  "voice_response": "Natural, flowing instruction to the caller. Speak in complete sentences, not lists. For accidents: 'Help is coming! Emergency services are being dispatched now. Move to safe location away from traffic and turn on hazard lights immediately...'",
+  "safety_precautions": ["Natural precaution 1", "Natural precaution 2", "Natural precaution 3"],
+  "immediate_actions": ["Natural action 1 for caller to take now", "Natural action 2"],
   "caller_guidance": "Reassuring statement about what to expect from responders",
   "dispatcher_summary": "Brief summary for emergency dispatcher"
 }}
 
 Guidelines:
-1. Voice response should be calm, clear, and actionable (under 30 seconds to read)
-2. Safety precautions must be specific and immediately doable
-3. For LEVEL_1 (Critical): Emphasize urgency and evacuation/calling 911
-4. For LEVEL_2 (High): Balance urgency with reassurance
-5. For LEVEL_3/4: Reassuring tone, clear next steps
-6. Avoid technical jargon
-7. Be empathetic but directive"""
+1. Voice response should be natural, flowing speech (under 30 seconds to read)
+2. Use complete sentences, NOT bullet points or numbered lists
+3. For accidents: Start with "Help is coming! Emergency services are being dispatched now..."
+4. Safety precautions must be natural phrases, not "actionable precaution"
+5. For LEVEL_1 (Critical): Emphasize urgency and evacuation/calling 911
+6. For LEVEL_2 (High): Balance urgency with reassurance
+7. For LEVEL_3/4: Reassuring tone, clear next steps
+8. Avoid technical jargon
+9. Be empathetic but directive"""
         
         return prompt
     
@@ -137,12 +139,13 @@ Guidelines:
                 ]
             },
             "ACCIDENT": {
-                "voice_response": "Please move to a safe location away from traffic if possible. Emergency services are responding.",
+                "voice_response": "Help is coming! Emergency services are being dispatched now. Move to safe location away from traffic and turn on hazard lights immediately. Check for injuries and provide first aid. Call emergency services if serious injuries. Take photos of scene if safe to do so. Stay away from moving traffic and set up warning triangles or flares behind your vehicle. Do not move injured persons unless there is immediate danger. Apply direct pressure to bleeding wounds and keep injured persons warm with blankets or clothing. Exchange information with other drivers involved and document scene with photos when safe. Follow emergency dispatcher instructions exactly.",
                 "safety_precautions": [
-                    "Move to a safe location away from traffic",
-                    "Turn on hazard lights if in vehicle",
-                    "Do not move injured persons unless in immediate danger",
-                    "Cover injured persons if possible"
+                    "Move to safe location away from traffic",
+                    "Turn on hazard lights immediately",
+                    "Check for injuries and provide first aid",
+                    "Call emergency services if serious injuries",
+                    "Take photos of scene if safe to do so"
                 ],
                 "immediate_actions": [
                     "Move to safety",
