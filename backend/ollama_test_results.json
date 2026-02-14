@@ -1,0 +1,51 @@
+[
+  {
+    "scenario": "Medical Emergency - Heart Attack",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 7.501840591430664
+  },
+  {
+    "scenario": "Fire Emergency",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 3.0317306518554688
+  },
+  {
+    "scenario": "Police - Violent Crime",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 3.9567947387695312
+  },
+  {
+    "scenario": "Traffic Accident",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 3.342866897583008
+  },
+  {
+    "scenario": "Mental Health Crisis",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 4.627227783203125
+  },
+  {
+    "scenario": "Moderate Medical Issue",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 3.7078857421875
+  },
+  {
+    "scenario": "Non-emergency",
+    "success": true,
+    "emergency_type": "MEDICAL",
+    "severity": "LEVEL_2",
+    "processing_time_ms": 3.8650035858154297
+  }
+]

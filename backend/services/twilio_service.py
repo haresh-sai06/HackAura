@@ -2,6 +2,10 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Record
 from typing import Optional
 from config import settings
 from models.emergency_schema import TriageResult
+from services.ollama_response_generator import ollama_response_generator
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TwilioService:
     def __init__(self):
@@ -79,25 +83,60 @@ class TwilioService:
         """Generate enhanced emergency response with personalized safety instructions"""
         response = VoiceResponse()
         
-        # Get emergency details for personalized response
-        emergency_type = triage_result.emergency_type.value
-        severity_level = triage_result.severity_level.value
-        location = triage_result.location or "your location"
-        
-        # Create personalized safety instructions based on emergency type
-        safety_instructions = self._get_safety_instructions(emergency_type, severity_level)
-        
-        # Main emergency confirmation
-        confirmation_message = f"Emergency recorded. {triage_result.assigned_service.value} is being dispatched to {location}."
-        response.say(confirmation_message, voice=self.ai_voice, language='en-US')
-        
-        # Add personalized safety guidance
-        response.say("While you wait, please follow these safety instructions:", voice=self.ai_voice, language='en-US')
-        
-        for instruction in safety_instructions:
-            response.say(instruction, voice=self.ai_voice, language='en-US')
-            # Add small pause between instructions
+        # Get AI-generated voice response with safety precautions
+        try:
+            ai_response = ollama_response_generator.generate_voice_response(triage_result)
+            
+            logger.info(f"🎤 Generated voice response for {triage_result.emergency_type.value}")
+            
+            # Say main voice response
+            response.say(ai_response['voice_response'], voice=self.ai_voice, language='en-US')
             response.pause(length=1)
+            
+            # Add safety precautions if available
+            if ai_response['safety_precautions']:
+                response.say("Here are important safety instructions:", voice=self.ai_voice, language='en-US')
+                response.pause(length=1)
+                
+                for precaution in ai_response['safety_precautions'][:3]:  # Limit to 3 precautions
+                    response.say(precaution, voice=self.ai_voice, language='en-US')
+                    response.pause(length=1)
+            
+            # Add caller guidance
+            if ai_response['caller_guidance']:
+                response.say(ai_response['caller_guidance'], voice=self.ai_voice, language='en-US')
+                response.pause(length=1)
+            
+            # For critical emergencies, keep line open
+            if ai_response['is_life_threatening']:
+                response.say("Stay on the line. I'm here with you.", voice=self.ai_voice, language='en-US')
+                gather = Gather(
+                    input='speech',
+                    timeout=10,
+                    action='/api/voice/process',
+                    method='POST',
+                    language='en-US',
+                    speech_timeout=5,
+                    speech_model='phone_call'
+                )
+                gather.say("If your situation changes, please tell me.", voice=self.ai_voice, language='en-US')
+                response.append(gather)
+            else:
+                response.say("Keep your phone nearby. Help is on the way.", voice=self.ai_voice, language='en-US')
+                response.hangup()
+            
+        except Exception as e:
+            logger.error(f"❌ Error generating AI voice response: {e}")
+            # Fallback to basic response
+            response.say(f"Emergency recorded. {triage_result.assigned_service.value} is being dispatched.", 
+                        voice=self.ai_voice, language='en-US')
+            response.hangup()
+        
+        return str(response)
+    
+    def generate_emergency_safety_response_with_precautions(self, triage_result) -> str:
+        """Alias for enhanced response (same as generate_emergency_safety_response)"""
+        return self.generate_emergency_safety_response(triage_result)
         
         # Reassurance and final guidance
         reassurance = self._get_reassurance_message(emergency_type, severity_level)
