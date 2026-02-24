@@ -1,10 +1,10 @@
-# HackAura - AI-Powered Emergency Triage System
+# SENTINEL-AI: Smart Emergency Response & Disaster Coordination System
 
 A sophisticated emergency call triage system that uses AI to analyze emergency situations, classify severity, and provide real-time safety guidance through voice conversations.
 
 ## 🚀 Overview
 
-HackAura is an advanced emergency response system that combines:
+Sentinal-AI is an advanced emergency response system that combines:
 - **AI-Powered Triage**: Ollama AI models for emergency classification and severity assessment
 - **Natural Voice Conversations**: Twilio integration for real-time voice interactions
 - **Real-time Dashboard**: Live monitoring of emergency calls and responses
